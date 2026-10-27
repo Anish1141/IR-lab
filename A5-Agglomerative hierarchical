@@ -1,0 +1,123 @@
+#5
+# Assignment 5: Agglomerative hierarchical clustering
+# pip install scikit-learn scipy matplotlib
+import matplotlib
+matplotlib.use("Agg")  # saves the figure; remove this line to use plt.show()
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import linkage, dendrogram
+
+docs = [
+    "Cricket match was won by India in the final over",
+    "The batsman scored a century in the test match",
+    "Football world cup final is played tonight",
+    "Neural networks are used for image classification",
+    "Machine learning models need training data",
+    "Deep learning improves speech recognition",
+    "The stock market fell after the interest rate hike",
+    "Banks raised interest rates to control inflation",
+    "Share prices rose as the company reported profit",
+]
+
+# text -> TF-IDF vectors
+vec = TfidfVectorizer(stop_words="english")
+X = vec.fit_transform(docs).toarray()
+
+# agglomerative clustering (bottom-up)
+k = 3
+model = AgglomerativeClustering(n_clusters=k, linkage="ward")
+labels = model.fit_predict(X)
+
+for c in range(k):
+    print(f"\nCluster {c}:")
+    for d, l in zip(docs, labels):
+        if l == c:
+            print("  -", d)
+
+# dendrogram
+Z = linkage(X, method="ward")
+plt.figure(figsize=(10, 5))
+dendrogram(Z, labels=[f"D{i+1}" for i in range(len(docs))])
+plt.title("Agglomerative Hierarchical Clustering - Dendrogram")
+plt.xlabel("Documents")
+plt.ylabel("Distance")
+plt.savefig("dendrogram.png")
+print("\nDendrogram saved as dendrogram.png")
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+A5: AGGLOMERATIVE HIERARCHICAL CLUSTERING
+
+AIM: Group similar documents without labels using bottom-up hierarchical clustering, and draw the dendrogram.
+
+CODE EXPLAINED
+1. matplotlib.use("Agg")
+   Makes matplotlib save images instead of opening a window (works without a display). Delete this line if you want plt.show().
+
+2. docs = [...]
+   9 short documents on three topics: sports, AI/ML, finance. No labels given to the algorithm.
+
+3. vec = TfidfVectorizer(stop_words="english"); X = vec.fit_transform(docs).toarray()
+   Converts each document into a TF-IDF vector (weights important words higher). .toarray() makes it a dense matrix because Ward linkage needs dense data.
+
+4. model = AgglomerativeClustering(n_clusters=3, linkage="ward"); labels = model.fit_predict(X)
+   Starts with 9 clusters (one per doc), repeatedly merges the two clusters whose merge increases variance the least (Ward), until 3 remain. labels[i] = cluster number of doc i.
+
+5. Printing loop
+   For each cluster number, prints the documents that have that label.
+
+6. Z = linkage(X, method="ward")
+   scipy computes the full merge history (which clusters merged, at what distance). This is the data for the tree.
+
+7. dendrogram(Z, labels=[D1..D9]); plt.savefig("dendrogram.png")
+   Draws the tree. Bottom = documents, height = distance at which clusters merged. Saved as dendrogram.png.
+
+PIPELINE: text -> TF-IDF -> agglomerative clustering -> clusters + dendrogram.
+
+OUTPUT TO EXPECT: 3 clusters printed, dendrogram.png created. Not perfect because the data is tiny (the neural networks doc landed with finance).
+
+VIVA Q&A
+Q: What is clustering? Clustering vs classification?
+A: Grouping similar items without labels (unsupervised). Classification needs labeled training data.
+
+Q: What is agglomerative clustering?
+A: Bottom-up hierarchical method: each doc starts as its own cluster; the two closest clusters are merged repeatedly.
+
+Q: Agglomerative vs divisive?
+A: Agglomerative merges (bottom-up); divisive splits (top-down).
+
+Q: What is a dendrogram?
+A: A tree showing the order of merges and the distance of each merge. Cutting it at a height gives clusters.
+
+Q: What is linkage? Types?
+A: Rule for distance between clusters: single (nearest points), complete (farthest), average, ward (minimum variance increase).
+
+Q: Why ward?
+A: Gives compact, balanced clusters; common default.
+
+Q: Why TF-IDF instead of counts?
+A: Down-weights common words, so document similarity is more meaningful.
+
+Q: How do you choose the number of clusters?
+A: Cut the dendrogram at a big jump in merge distance, or use silhouette score. Here k=3 was fixed.
+
+Q: Advantages and disadvantages?
+A: No need to know k in advance, gives a hierarchy. But O(n^2) memory/time and merges can't be undone.
+
+Q: Compare with K-means.
+A: K-means needs k, is faster on large data. Hierarchical gives the whole tree and is deterministic.
+
+Q: What distance is used?
+A: Euclidean distance between TF-IDF vectors (Ward uses it). Cosine is common for text with other linkages.
+
+Q: Why .toarray()?
+A: TF-IDF returns a sparse matrix; Ward linkage needs a dense one.
+
+SHORT VIVA ANSWER
+"This program converts documents into TF-IDF vectors and groups them using agglomerative hierarchical clustering. Each document starts as its own cluster and the two closest clusters are merged repeatedly using Ward linkage until 3 clusters remain. The merge process is shown as a dendrogram."
+
+EXTRA QUESTIONS
+Q: What is K-Means? How to choose K? A: Unsupervised clustering algorithm. K = number of clusters. Choose K using the Elbow plot, picking K where the inertia curve bends.
+Q: What is TF-IDF? A: Term Frequency-Inverse Document Frequency. TF = how often a word appears in a doc. IDF = log(total docs / docs containing the word). Common words get low weight.
+Q: Supervised vs unsupervised learning? A: Supervised uses labelled data (Naive Bayes, SVM). Unsupervised has no labels (K-Means, Hierarchical Clustering). Clustering is unsupervised.
+Q: What is data normalization? A: Scaling features to a common range. Min-Max scales to [0,1]; Standard (Z-score) gives mean 0, std 1. Prevents large-valued features from dominating.
