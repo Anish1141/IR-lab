@@ -1,0 +1,150 @@
+#7
+# Assignment 7: Web crawler to pull product information and links from an e-commerce site
+# pip install requests beautifulsoup4
+# Uses books.toscrape.com - a practice e-commerce site made for scraping.
+import csv
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
+BASE = "http://books.toscrape.com/"
+MAX_PAGES = 3  # number of listing pages to crawl
+
+products = []
+url = BASE
+
+for page in range(MAX_PAGES):
+    print("Crawling:", url)
+    resp = requests.get(url, timeout=10)
+    resp.encoding = "utf-8"
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    for item in soup.select("article.product_pod"):
+        title = item.h3.a["title"]
+        link = urljoin(url, item.h3.a["href"])
+        price = item.select_one("p.price_color").text.strip()
+        stock = item.select_one("p.availability").text.strip()
+        rating = item.select_one("p.star-rating")["class"][1]
+        products.append({
+            "title": title,
+            "price": price,
+            "rating": rating,
+            "availability": stock,
+            "link": link,
+        })
+
+    nxt = soup.select_one("li.next a")
+    if not nxt:
+        break
+    url = urljoin(url, nxt["href"])
+
+# display
+for p in products[:10]:
+    print(f"{p['title'][:40]:40} | {p['price']:8} | {p['rating']:5} | {p['link']}")
+print("\nTotal products:", len(products))
+
+# save to CSV
+with open("products.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=["title", "price", "rating", "availability", "link"])
+    writer.writeheader()
+    writer.writerows(products)
+print("Saved to products.csv")
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+A7: WEB CRAWLER TO PULL PRODUCT INFORMATION AND LINKS FROM AN E-COMMERCE SITE
+
+AIM: Visit product listing pages, extract product details and links, follow pagination, save to CSV.
+
+CODE EXPLAINED
+1. Imports: csv, requests, BeautifulSoup, urljoin
+   requests downloads the page, BeautifulSoup parses the HTML, urljoin builds full URLs, csv saves output.
+
+2. BASE = "http://books.toscrape.com/"; MAX_PAGES = 3
+   Practice e-commerce site made for scraping. We crawl only 3 listing pages.
+
+3. products = []; url = BASE
+   products stores results. url is the current page to fetch (starts at home page).
+
+4. for page in range(MAX_PAGES):
+   Loop once per listing page.
+
+5. resp = requests.get(url, timeout=10); resp.encoding = "utf-8"
+   Downloads the HTML. timeout stops it hanging. Setting utf-8 avoids garbled characters (e.g. the pound sign).
+
+6. soup = BeautifulSoup(resp.text, "html.parser")
+   Parses the HTML text into a searchable tree.
+
+7. for item in soup.select("article.product_pod"):
+   CSS selector: every <article class="product_pod"> is one product card on the page.
+
+8. Extraction inside the loop
+   title  = item.h3.a["title"]            -> full book name (stored in the title attribute)
+   link   = urljoin(url, item.h3.a["href"]) -> relative link made into a full URL
+   price  = item.select_one("p.price_color").text.strip()
+   stock  = item.select_one("p.availability").text.strip()
+   rating = item.select_one("p.star-rating")["class"][1] -> the class list is ["star-rating", "Three"], so index 1 gives "Three".
+   Each product is appended as a dictionary.
+
+9. nxt = soup.select_one("li.next a")
+   Finds the "next page" button. If none exists (last page), break. Otherwise url = urljoin(url, nxt["href"]) and the loop continues. This is the crawling (link-following) part.
+
+10. Printing: first 10 products in a formatted table, then the total count.
+
+11. csv.DictWriter -> writes header and all rows to products.csv.
+
+PIPELINE: fetch page -> parse -> extract products -> find next link -> repeat -> save CSV.
+
+NOTE: Needs internet. Run it once before the exam.
+
+VIVA Q&A
+Q: What is a web crawler?
+A: A program that automatically visits pages, extracts data and follows links to find more pages. Search engines use crawlers to collect pages.
+
+Q: Crawler vs scraper?
+A: Crawler discovers and follows links. Scraper extracts specific data. This program does both.
+
+Q: Libraries used?
+A: requests (fetch HTML) and BeautifulSoup (parse). Scrapy is a full framework alternative.
+
+Q: What does BeautifulSoup do?
+A: Parses HTML into a tree searchable with tags and CSS selectors (select, select_one, find).
+
+Q: What is a CSS selector? Example?
+A: A pattern to pick elements. "article.product_pod" = article tags with class product_pod.
+
+Q: select vs select_one?
+A: select returns a list of all matches; select_one returns the first match.
+
+Q: How does it reach the next page?
+A: Reads the href of "li.next a", joins it to the current URL with urljoin, loops.
+
+Q: Why urljoin?
+A: Page links are relative (page-2.html); urljoin makes complete URLs.
+
+Q: What is robots.txt?
+A: A file telling crawlers which parts of a site not to visit. A polite crawler obeys it and adds delays between requests.
+
+Q: Why this website?
+A: It is a sandbox site meant for scraping practice, so it is legal and safe.
+
+Q: What is the crawl frontier?
+A: The queue of URLs still to visit. A full crawler uses a queue (BFS) plus a visited set to avoid repeats.
+
+Q: Why timeout=10?
+A: Avoids waiting forever if the server doesn't respond.
+
+Q: What if the page uses JavaScript to load products?
+A: requests only gets raw HTML. Use Selenium or Playwright.
+
+Q: Ethical/legal points?
+A: Respect robots.txt and terms of service, rate-limit requests, avoid personal data.
+
+Q: What does status code 200 / 404 mean?
+A: 200 = OK. 404 = page not found. Use resp.status_code or resp.raise_for_status() to check.
+
+SHORT VIVA ANSWER
+"This program is a web crawler and scraper. It downloads product listing pages using requests, parses the HTML with BeautifulSoup, extracts title, price, rating, availability and link of each product, follows the next-page link to crawl more pages, and saves all the data into a CSV file."
+
+EXTRA QUESTIONS
+Q: What libraries are used for web scraping in Python? A: requests (download pages), BeautifulSoup (parse HTML), Scrapy (full crawling framework), Selenium/Playwright (JavaScript pages).
+Q: What is PageRank? A: An algorithm that ranks web pages by the number and quality of links pointing to them. Used by Google's search engine.
