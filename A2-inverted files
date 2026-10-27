@@ -1,0 +1,133 @@
+#2
+# Assignment 2: Retrieval of documents using inverted files
+import re
+from collections import defaultdict
+
+docs = {
+    1: "Information retrieval deals with finding documents in large collections",
+    2: "Search engines use inverted index for fast retrieval of documents",
+    3: "Machine learning is used for text classification and clustering",
+    4: "An inverted index maps each term to the documents containing it",
+    5: "Web crawlers collect documents for search engines",
+}
+
+stop_words = {"is", "a", "an", "the", "of", "in", "for", "and", "to", "each", "it", "with"}
+
+def tokenize(text):
+    return [w for w in re.findall(r'[a-z]+', text.lower()) if w not in stop_words]
+
+# ---- build inverted index: term -> {doc_id: term_frequency}
+inverted = defaultdict(dict)
+for doc_id, text in docs.items():
+    for term in tokenize(text):
+        inverted[term][doc_id] = inverted[term].get(doc_id, 0) + 1
+
+print("INVERTED INDEX")
+for term in sorted(inverted):
+    print(f"{term:15} -> {sorted(inverted[term].items())}")
+
+# ---- boolean AND retrieval
+def search_and(query):
+    terms = tokenize(query)
+    if not terms:
+        return set()
+    result = set(inverted.get(terms[0], {}))
+    for t in terms[1:]:
+        result &= set(inverted.get(t, {}))
+    return result
+
+# ---- boolean OR retrieval, ranked by total term frequency
+def search_ranked(query):
+    scores = defaultdict(int)
+    for t in tokenize(query):
+        for doc_id, tf in inverted.get(t, {}).items():
+            scores[doc_id] += tf
+    return sorted(scores.items(), key=lambda x: -x[1])
+
+while True:
+    q = input("\nEnter query (or 'quit'): ").strip()
+    if q.lower() == "quit":
+        break
+    print("AND match :", sorted(search_and(q)))
+    print("Ranked    :", search_ranked(q))
+    for doc_id, score in search_ranked(q):
+        print(f"  Doc {doc_id} (score {score}): {docs[doc_id]}")
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+A2: RETRIEVAL OF DOCUMENTS USING INVERTED FILES
+
+AIM: Build an inverted index and use it to retrieve documents for a query.
+
+CODE EXPLAINED
+1. docs = {1: "...", 2: "...", ...}
+   Dictionary of document id -> text. This is our collection.
+
+2. stop_words = {...}; tokenize(text)
+   tokenize lowercases the text, extracts words with regex, and drops stop words. Returns a list of terms.
+
+3. inverted = defaultdict(dict)
+   The index. Shape: inverted[term][doc_id] = term frequency. defaultdict means a new term automatically gets an empty dict.
+
+4. Index building loop:
+   for doc_id, text in docs.items():
+       for term in tokenize(text):
+           inverted[term][doc_id] = inverted[term].get(doc_id, 0) + 1
+   For every term in every doc, add 1 to its count for that doc. Example: "documents" -> {1:1, 2:1, 4:1, 5:1}.
+
+5. Printing the index: sorted(inverted) prints terms alphabetically with their (doc_id, tf) postings.
+
+6. search_and(query)
+   Tokenize query. Start with the doc set of the first term, then intersect (&=) with the doc set of each further term. Only docs containing ALL terms remain. inverted.get(t, {}) avoids errors for unknown terms.
+
+7. search_ranked(query)
+   For each query term, add its tf to a per-document score. Sort scores descending. A doc matching more terms/more often ranks higher. (OR semantics + tf scoring.)
+
+8. while True loop
+   Reads a query with input(), prints the AND result, the ranked list and the text of ranked docs. Type quit to exit.
+
+EXAMPLE: query "inverted index" -> AND match [2, 4]; ranked Doc 2 and Doc 4.
+
+VIVA Q&A
+Q: What is an inverted index?
+A: A map from each term to the documents containing it (postings list), like the index at the back of a book.
+
+Q: Why "inverted"?
+A: A forward index maps doc -> terms. This reverses it: term -> docs.
+
+Q: Why is it fast?
+A: Search only looks up the query terms' postings lists instead of scanning every document.
+
+Q: What is a posting?
+A: One entry (doc_id, tf). The list of all entries for a term is the postings list.
+
+Q: How does AND work?
+A: Intersection of the postings sets of all query terms.
+
+Q: What would OR and NOT be?
+A: OR = union of sets. NOT = set difference (all docs minus the term's docs).
+
+Q: How did you rank?
+A: Sum of term frequencies of query terms per doc. Simple tf scoring.
+
+Q: What is Boolean retrieval?
+A: Query with AND/OR/NOT; a doc either matches or not, no ranking.
+
+Q: Data structure used?
+A: defaultdict of dicts (hash-based dictionary). Average O(1) lookup.
+
+Q: What is TF-IDF?
+A: tf = count in doc; idf = log(N/df). High weight for terms frequent in a doc but rare in the collection.
+
+Q: How can you improve it?
+A: TF-IDF weights, positional index for phrase queries, stemming, postings compression, sorted postings for faster merge.
+
+Q: Time complexity of intersecting two postings lists?
+A: O(m + n) if sorted lists are merged; here set intersection is about O(min(m, n)).
+
+SHORT VIVA ANSWER
+"This program builds an inverted index that maps every term to the documents containing it along with the term frequency. A query is answered by looking up the query terms in the index: AND search intersects the document sets, and ranked search sums the term frequencies so the best matching documents come first."
+
+EXTRA QUESTIONS
+Q: What is the difference between precision and recall? A: Precision = relevant retrieved / all retrieved. Recall = relevant retrieved / all relevant documents.
+Q: What is stemming vs lemmatization? A: Stemming crudely chops word endings (running->run). Lemmatization uses a dictionary to get the base form (better->good). Lemmatization is more accurate.
+Q: What is the IR pipeline? A: Crawl -> pre-process -> index -> query processing -> ranking -> evaluation.
