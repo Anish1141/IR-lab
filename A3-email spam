@@ -1,0 +1,144 @@
+#4
+# Assignment 4: E-mail spam filtering using text classification (Naive Bayes)
+# pip install scikit-learn
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+data = [
+    ("Win a free iPhone now, click here", "spam"),
+    ("Congratulations! You won a lottery of $1000000", "spam"),
+    ("Get cheap loans instantly, no documents needed", "spam"),
+    ("Free entry in weekly prize draw, claim now", "spam"),
+    ("Urgent: your account is suspended, verify now", "spam"),
+    ("Buy cheap medicines online, limited offer", "spam"),
+    ("You have been selected for a free gift card", "spam"),
+    ("Earn money from home, click the link", "spam"),
+    ("Meeting scheduled tomorrow at 10 am in the lab", "ham"),
+    ("Please find the attached assignment report", "ham"),
+    ("Can we discuss the project submission today?", "ham"),
+    ("Lunch at 1 pm with the team?", "ham"),
+    ("Your lecture notes for machine learning are uploaded", "ham"),
+    ("Reminder: practical exam on Monday", "ham"),
+    ("Thanks for the help with the code yesterday", "ham"),
+    ("Project review meeting moved to Friday", "ham"),
+]
+
+texts = [t for t, _ in data]
+labels = [l for _, l in data]
+
+# text -> bag of words (lowercase, stop words removed)
+vectorizer = CountVectorizer(lowercase=True, stop_words="english")
+X = vectorizer.fit_transform(texts)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, labels, test_size=0.25, random_state=42, stratify=labels
+)
+
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Confusion matrix (ham, spam):\n", confusion_matrix(y_test, y_pred, labels=["ham", "spam"]))
+print(classification_report(y_test, y_pred, zero_division=0))
+
+# test on new e-mails
+new_mails = [
+    "Claim your free prize now",
+    "Please send the IR lab journal tomorrow",
+]
+pred = model.predict(vectorizer.transform(new_mails))
+for mail, p in zip(new_mails, pred):
+    print(f"'{mail}'  ->  {p.upper()}")
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+A4: E-MAIL SPAM FILTERING USING TEXT CLASSIFICATION (Naive Bayes)
+
+AIM: Train a classifier on labeled e-mails and predict whether new mail is spam or ham.
+
+CODE EXPLAINED
+1. Imports
+   CountVectorizer (text -> word-count vectors), train_test_split, MultinomialNB (the classifier), metrics.
+
+2. data = [(text, label), ...]
+   16 small labeled e-mails: 8 "spam", 8 "ham" (ham = not spam). In a real exam you could load a CSV instead.
+
+3. texts = [...]; labels = [...]
+   Splits the data into the list of mails (X side) and list of labels (y side).
+
+4. vectorizer = CountVectorizer(lowercase=True, stop_words="english")
+   X = vectorizer.fit_transform(texts)
+   fit builds the vocabulary from all mails; transform converts each mail into a vector of word counts (bag of words). Stop words are ignored. X is a sparse matrix: rows = mails, columns = words.
+
+5. train_test_split(X, labels, test_size=0.25, random_state=42, stratify=labels)
+   75% train, 25% test. random_state=42 makes the split repeatable. stratify keeps equal spam/ham ratio in both parts.
+
+6. model = MultinomialNB(); model.fit(X_train, y_train)
+   Training: for each word it learns P(word | spam) and P(word | ham), plus class priors.
+
+7. y_pred = model.predict(X_test)
+   Predicts for each test mail the class with the highest probability.
+
+8. accuracy_score, confusion_matrix, classification_report
+   Accuracy = correct / total. Confusion matrix rows = actual, columns = predicted (order ham, spam). Report shows precision, recall, F1 per class.
+
+9. New mails: vectorizer.transform(new_mails)
+   IMPORTANT: use transform (not fit_transform) so new mails use the same vocabulary as training. Then predict and print SPAM/HAM.
+
+PIPELINE: text -> bag of words -> train/test split -> train NB -> predict -> evaluate.
+
+VIVA Q&A
+Q: What is text classification?
+A: Assigning a document to a predefined category using a model trained on labeled examples. It is supervised learning.
+
+Q: What is Naive Bayes?
+A: Probabilistic classifier using Bayes theorem: P(class|words) proportional to P(class) x product of P(word|class).
+
+Q: Why "naive"?
+A: It assumes words are independent given the class. Untrue, but works well in practice.
+
+Q: Why MultinomialNB?
+A: It models word counts, so it suits bag-of-words features.
+
+Q: What does CountVectorizer do?
+A: Builds the vocabulary and converts each text into a vector of word counts.
+
+Q: What is bag of words?
+A: Text as word counts, ignoring order.
+
+Q: Why fit on training but only transform on new data?
+A: The model only knows the training vocabulary; refitting would change the feature columns.
+
+Q: Why stratify in train_test_split?
+A: Keeps the class ratio equal in train and test sets.
+
+Q: Precision, recall, F1?
+A: Precision = TP/(TP+FP); recall = TP/(TP+FN); F1 = harmonic mean of both.
+
+Q: Why is accuracy only 75%?
+A: Dataset is tiny (4 test mails, one wrong = 25%). Real datasets (SMS Spam Collection) give about 97%+.
+
+Q: What is Laplace smoothing?
+A: Adds 1 (alpha=1) to every word count so unseen words don't give probability 0.
+
+Q: Which error is worse, false positive or false negative?
+A: False positive (real mail marked spam), since the user may miss important mail.
+
+Q: Other algorithms for this task?
+A: SVM, Logistic Regression, KNN, Decision Tree, Random Forest.
+
+Q: How would you improve the filter?
+A: More data, TF-IDF features, n-grams, stemming, tuning alpha.
+
+SHORT VIVA ANSWER
+"This program converts e-mail text into word-count vectors using bag of words, trains a Multinomial Naive Bayes classifier on labelled spam and ham mails, tests it on unseen mails, evaluates it using accuracy and confusion matrix, and then predicts whether new mails are spam or ham."
+
+EXTRA QUESTIONS
+Q: What is a confusion matrix? A: A table comparing actual vs predicted labels. It has 4 values: TP, TN, FP, FN. It helps evaluate classifier performance.
+Q: What is TP, TN, FP, FN? A: TP = model said Yes, was Yes. TN = model said No, was No. FP = model said Yes, was No (Type I error). FN = model said No, was Yes (Type II error).
+Q: Difference between Precision and Recall? A: Precision = TP/(TP+FP), of all predicted positives how many are correct. Recall = TP/(TP+FN), of all actual positives how many did we find.
+Q: When to use F1 vs F2 score? A: F1 when precision and recall are equally important. F2 when recall matters more (e.g. medical diagnosis).
+Q: Supervised vs unsupervised learning? A: Supervised uses labelled data (Naive Bayes, SVM, Linear Regression). Unsupervised has no labels and finds patterns (K-Means, Hierarchical Clustering).
+Q: What is AUC-ROC? A: ROC curve plots TPR vs FPR. AUC is the area under it: 1.0 = perfect, 0.5 = random.
