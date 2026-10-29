@@ -16,6 +16,8 @@ result = [stemmer.stem(w) for w in words
           if w.isalpha() and w not in stop_words]
 print("Original Text:", text)
 print("Processed Text:", result)
+
+
 ir 2 :
 from collections import defaultdict
 # Documents
@@ -34,6 +36,8 @@ print("Inverted Index:", dict(index))
 # Search document
 word = input("Enter search word: ").lower()
 print("Documents found:", index.get(word, []))
+
+
 ir 4 : spam filetring
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -56,6 +60,8 @@ print("Accuracy:", accuracy_score(y_test, model.predict(X_test)))
 # Predict email
 email = input("Enter email message: ")
 print("Prediction:", model.predict([email])[0])
+
+
 ir 5 :
 from sklearn.datasets import load_iris
 from sklearn.cluster import AgglomerativeClustering
@@ -73,6 +79,8 @@ plt.title("Hierarchical Clustering")
 plt.xlabel("Samples")
 plt.ylabel("Distance")
 plt.show()
+
+
 ir 7:
 import requests
 from bs4 import BeautifulSoup
