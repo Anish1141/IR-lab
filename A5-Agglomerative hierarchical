@@ -22,96 +22,80 @@ CODE EXPLAINED
 1. Import libraries
 python
 import requests
-import csv
 from bs4 import BeautifulSoup
-requests: Downloads the website page.
-csv: Saves extracted data into a CSV file.
+requests: Downloads the website webpage.
 BeautifulSoup: Parses HTML and extracts information from the webpage.
 
 2. Website URL
 python
-url = "http://books.toscrape.com/"
-response = requests.get(url)
-Stores the website address.
-requests.get() sends a request to the website.
-Downloads the webpage content.
+url = "https://books.toscrape.com/"
+Stores the website address from which we want to extract product information.
 
-3. Parse HTML
+3. Fetch and parse webpage
 python
-soup = BeautifulSoup(response.text, "html.parser")
-Converts HTML text into a searchable structure.
-html.parser is used to parse HTML content.
+soup = BeautifulSoup(requests.get(url).text, "html.parser")
+requests.get(url) sends a request to the website.
+.text retrieves the webpage HTML content.
+BeautifulSoup() converts HTML into a searchable structure.
+html.parser parses the HTML content.
 
-4. Create product list
+4. Extract product information
 python
-products = []
-Creates an empty list.
-Stores extracted product information.
-
-5. Extract product information
-python
-for item in soup.select("article.product_pod"):
+for product in soup.select(".product_pod"):
 Selects all product containers from the webpage.
-article.product_pod is a CSS selector.
+.product_pod is a CSS selector.
 Each product container represents one book.
 
-7. Store product information
+5. Extract product name
 python
-products.append([title, price, rating, link])
-Adds extracted details to the products list.
-Each product is stored as a separate list.
+name = product.h3.a["title"]
+Extracts the book name from the title attribute.
 
-8. Display products
+6. Extract product price
 python
-for p in products:
-    print("Title:", p[0])
-    print("Price:", p[1])
-    print("Rating:", p[2])
-    print("Link:", p[3])
-Displays product details one by one.
-p[0] represents title.
-p[1] represents price.
-p[2] represents rating.
-p[3] represents link.
+price = product.select_one(".price_color").text
+select_one() selects the first matching HTML element.
+.price_color identifies the price.
+.text extracts the price as text.
 
-9. Count products
+7. Extract product link
 python
-print("Total products:", len(products))
-- len() counts the total number of extracted products.
-
-10. Save data into CSV
-python
-with open("products.csv", "w", newline="", encoding="utf-8") as f:
-    writer = csv.writer(f)
-    writer.writerow(["Title", "Price", "Rating", "Link"])
-    writer.writerows(products)
-Creates a CSV file named products.csv.
-csv.writer() writes data into the file.
-writerow() writes the column headings.
-writerows() writes all product records.
-with open() automatically closes the file.
+link = "https://books.toscrape.com/catalogue/" + product.h3.a["href"]
+Extracts the product webpage link.
+["href"] gets the link address.
++ joins the website address with the product link to create a complete URL.
 
 VIVA Q&A
 Q1. What is a web crawler?
+
 A: A web crawler is a program that automatically visits websites and collects information from webpages.
 
 Q2. What is web scraping?
+
 A: Web scraping is the process of extracting useful information from websites.
 
 Q3. What is the difference between web crawling and web scraping?
-A:Web crawling discovers and visits webpages.
+
+A:
+
+Web crawling discovers and visits webpages.
+
 Web scraping extracts specific information from webpages.
 
 Q4. Which libraries are used in this program?
-A: Requests, BeautifulSoup and CSV.
+
+A: Requests and BeautifulSoup.
 
 Q5. What is Requests?
+
 A: Requests is a Python library used to send HTTP requests and download webpage content.
 
 Q6. What is BeautifulSoup?
+
 A: BeautifulSoup is a Python library used to parse HTML and extract information from webpages.
 
 Q7. What is HTML?
+
 A: HTML stands for HyperText Markup Language. It is used to create the structure of webpages.
 
 Q8. What is a CSS selector?
@@ -120,8 +104,8 @@ A: A CSS selector is used to select specific HTML elements based on their tags, 
 Q9. What does requests.get() do?
 A: It sends a GET request to a website and retrieves its webpage content.
 
-Q10. What does response.text do?
-A: It returns the webpage content as text.
+Q10. What does .text do?
+A: It extracts the text content from the webpage or HTML element.
 
 Q11. What does BeautifulSoup() do?
 A: It converts HTML content into a searchable structure.
@@ -135,20 +119,20 @@ A: It selects all HTML elements matching a given CSS selector.
 Q14. What is the use of select_one()?
 A: It selects the first matching HTML element.
 
-Q15. What is CSV?
-A: CSV stands for Comma-Separated Values. It is a file format used to store tabular data.
+Q15. What is the use of the href attribute?
+A: It stores the URL or link address of a webpage.
 
-Q16. What does csv.writer() do?
-A: It writes data into a CSV file.
+Q16. What is the use of the title attribute?
+A: It stores the title or name of an HTML element.
 
-Q17. What is the use of writerow()?
-A: It writes a single row into a CSV file.
+Q17. What does product.h3.a["title"] do?
+A: It extracts the product name from the title attribute of the link inside the h3 tag.
 
-Q18. What is the use of writerows()?
-A: It writes multiple rows into a CSV file.
+Q18. What is a URL?
+A: URL stands for Uniform Resource Locator. It is the address of a webpage.
 
-Q19. What does len(products) do?
-A: It counts the total number of extracted products.
+Q19. Does this program require internet?
+A: Yes. It requires internet to download webpage content.
 
 SHORT VIVA ANSWER
 "This program builds a web crawler to extract product information from an e-commerce website. First, the Requests library downloads the webpage.
