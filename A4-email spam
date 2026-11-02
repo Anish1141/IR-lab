@@ -1,4 +1,4 @@
-# Assignment 4: E-mail spam filtering using text classification (Naive Bayes)
+# Assignment 3: E-mail spam filtering using text classification (Naive Bayes)
 # pip install scikit-learn
 
 from sklearn.feature_extraction.text import CountVectorizer
