@@ -28,91 +28,77 @@ A4: E-MAIL SPAM FILTERING USING TEXT CLASSIFICATION (Naive Bayes)
 AIM: Train a classifier on labeled e-mails and predict whether new mail is spam or ham.
 
 CODE EXPLAINED
-1. Imports
-CountVectorizer: Converts text into numerical word-count vectors.
+1. Import libraries
+python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import accuracy_score
+pandas: Used to load and handle the dataset.
 train_test_split: Splits data into training and testing sets.
+CountVectorizer: Converts text into numerical word-count vectors.
 MultinomialNB: Naive Bayes classification algorithm.
+make_pipeline: Combines text vectorization and classification into one pipeline.
 accuracy_score: Calculates the accuracy of the model.
 
-2. Dataset
+2. Load dataset
 python
-emails = [
-    ("Win a free iPhone now", "spam"),
-    ("Meeting scheduled tomorrow", "ham")
-]
-Stores email messages with their labels.
+df = pd.read_csv("spam.csv", encoding="latin-1")
+df = df.iloc[:, :2]
+df.columns = ["label", "message"]
+Reads the spam.csv dataset.
+encoding="latin-1" handles special characters.
+iloc[:, :2] selects the first two columns.
+Renames the columns as label and message.
+The dataset contains email or SMS messages with their labels.
+Spam = Unwanted messages.
+Ham = Genuine or normal messages.
 
-spam means unwanted emails.
-ham means genuine or normal emails.
-Our simplified dataset contains 12 emails: 6 spam and 6 ham.
-
-3. Separate emails and labels
-python
-texts = [x[0] for x in emails]
-labels = [x[1] for x in emails]
-texts stores email messages.
-
-labels stores email categories (spam or ham).
-Uses list comprehension.
-
-4. Convert text into numbers
-python
-cv = CountVectorizer(stop_words='english')
-X = cv.fit_transform(texts)
-Creates a CountVectorizer object.
-
-Converts text into numerical word counts.
-Removes common English stop words.
-fit_transform() learns the vocabulary and converts emails into numerical vectors.
-This technique is called Bag of Words.
-
-5. Split dataset
+3. Split the dataset
 python
 X_train, X_test, y_train, y_test = train_test_split(
-    X, labels, test_size=0.25, random_state=42
-)
+    df.message, df.label, test_size=0.2, random_state=42)
 Splits the dataset into training and testing data.
-
-test_size=0.25 means 25% testing and 75% training.
+df.message contains the messages.
+df.label contains the categories (spam or ham).
+test_size=0.2 means 20% testing and 80% training.
 random_state=42 ensures the same split every time.
 
-6. Train Naive Bayes model
+4. Create and train the model
 python
-model = MultinomialNB()
+model = make_pipeline(CountVectorizer(), MultinomialNB())
 model.fit(X_train, y_train)
-Creates a Multinomial Naive Bayes classifier.
-
+make_pipeline() combines CountVectorizer and MultinomialNB.
+CountVectorizer() converts text into numerical word counts.
+MultinomialNB() creates the Naive Bayes classifier.
 fit() trains the model using training data.
-Learns patterns associated with spam and ham emails.
 
-7. Test the model
+5. Test the model
 python
-y_pred = model.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
-predict() predicts the categories of test emails.
-
+print("Accuracy:", accuracy_score(y_test, model.predict(X_test)))
+predict() predicts the categories of test messages.
 accuracy_score() calculates how many predictions are correct.
+Displays the model accuracy.
 
-8. Predict new emails
+6. Enter a new email
 python
-new_emails = ["Win a free prize", "Send the project report"]
-new_X = cv.transform(new_emails)
-predictions = model.predict(new_X)
-Stores two new email messages.
+email = input("Enter email message: ")
+Allows the user to enter a new email message for testing.
 
-transform() converts new emails into numerical vectors using the existing vocabulary.
-predict() classifies them as spam or ham.
-
-9. Display predictions
+7. Predict email
 python
-for mail, result in zip(new_emails, predictions):
-    print(mail, "->", result.upper())
-zip() combines each email with its prediction.
-
-upper() converts the result into uppercase.
-Displays SPAM or HAM.
+print("Prediction:", model.predict([email])[0])
+model.predict() predicts whether the email is spam or ham.
+[email] passes the input as a list.
+[0] extracts the first prediction.
+Displays the result.
 
 VIVA Q&A
+Q1. What is email spam filtering?
+A: It is the process of identifying and separating unwanted emails from genuine emails.
+
 Q2. What is text classification?
 A: Text classification is the process of assigning text into predefined categories using a trained model.
 
@@ -120,7 +106,7 @@ Q3. What is Naive Bayes?
 A: Naive Bayes is a supervised machine learning algorithm based on Bayes' theorem.
 
 Q4. Why is it called Naive Bayes?
-A: Because it assumes that all words are independent of each other given the class.
+A: Because it assumes that words are independent of each other given the class.
 
 Q5. What is Multinomial Naive Bayes?
 A: It is a Naive Bayes algorithm that works with word frequencies or counts.
@@ -132,8 +118,8 @@ Q7. What is Bag of Words?
 A: It is a text representation technique that counts the frequency of words without considering their order.
 
 Q8. What is the difference between spam and ham?
-A:Spam: Unwanted or promotional emails.
-Ham: Genuine or normal emails.
+A:Spam: Unwanted or promotional messages.
+Ham: Genuine or normal messages.
 
 Q9. What is training data?
 A: Training data is the data used to teach the machine learning model.
@@ -141,8 +127,8 @@ A: Training data is the data used to teach the machine learning model.
 Q10. What is testing data?
 A: Testing data is used to check how accurately the trained model predicts unseen data.
 
-Q11. What does test_size=0.25 mean?
-A: It means 25% of the dataset is used for testing and 75% for training.
+Q11. What does test_size=0.2 mean?
+A: It means 20% of the dataset is used for testing and 80% for training.
 
 Q12. What is random_state=42?
 A: It ensures that the dataset is split in the same way every time.
@@ -156,15 +142,26 @@ A: It predicts the class or category of new input data.
 Q15. What is accuracy?
 A: Accuracy is the percentage of correctly predicted results out of total predictions.
 
-Q16. What is the use of stop_words='english'?
-A: It removes common English words such as the, is, and, and of.
+Q16. What is the use of pandas?
+A: Pandas is a Python library used for data handling and analysis.
 
 Q17. What is supervised learning?
-A: Supervised learning is a machine learning technique in which a model learns from labeled data.
+A: Supervised learning is a machine learning technique in which a model learns from labelled data.
 
-Q18. What is the difference between fit_transform() and transform()?
-A:fit_transform() learns the vocabulary and converts text into vectors.
-transform() converts new text using the already learned vocabulary.
+Q18. What is make_pipeline()?
+A: It combines multiple machine learning steps into a single pipeline.
+
+Q19. What is the use of pd.read_csv()?
+A: It reads and loads data from a CSV file into a DataFrame.
+
+Q20. What is the use of encoding="latin-1"?
+A: It helps read special characters in the CSV file correctly.
+
+Q21. What is the use of iloc[:, :2]?
+A: It selects all rows and only the first two columns from the dataset.
+
+Q22. What is Bayes' theorem?
+A: Bayes' theorem is a mathematical formula used to calculate the probability of an event based on prior knowledge.
 
 SHORT VIVA ANSWER
 "This program implements email spam filtering using the Naive Bayes classification algorithm. First, we create a dataset containing spam and ham emails. 
