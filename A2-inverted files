@@ -124,7 +124,8 @@ Q: Time complexity of intersecting two postings lists?
 A: O(m + n) if sorted lists are merged; here set intersection is about O(min(m, n)).
 
 SHORT VIVA ANSWER
-"This program builds an inverted index that maps every term to the documents containing it along with the term frequency. A query is answered by looking up the query terms in the index: AND search intersects the document sets, and ranked search sums the term frequencies so the best matching documents come first."
+"This program builds an inverted index that maps every term to the documents containing it along with the term frequency. A query is answered by looking up 
+the query terms in the index: AND search intersects the document sets, and ranked search sums the term frequencies so the best matching documents come first."
 
 EXTRA QUESTIONS
 Q: What is the difference between precision and recall? A: Precision = relevant retrieved / all retrieved. Recall = relevant retrieved / all relevant documents.
