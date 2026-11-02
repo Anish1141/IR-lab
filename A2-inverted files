@@ -1,4 +1,3 @@
-#2
 # Assignment 2: Retrieval of documents using inverted files
 import re
 from collections import defaultdict
