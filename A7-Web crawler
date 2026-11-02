@@ -1,150 +1,183 @@
-#7
-# Assignment 7: Web crawler to pull product information and links from an e-commerce site
+# Assignment 5: Web crawler to pull product information and links from an e-commerce site
 # pip install requests beautifulsoup4
-# Uses books.toscrape.com - a practice e-commerce site made for scraping.
-import csv
+
 import requests
+import csv
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
 
-BASE = "http://books.toscrape.com/"
-MAX_PAGES = 3  # number of listing pages to crawl
+# Website
+url = "http://books.toscrape.com/"
+response = requests.get(url)
 
+soup = BeautifulSoup(response.text, "html.parser")
+
+# Extract product information
 products = []
-url = BASE
 
-for page in range(MAX_PAGES):
-    print("Crawling:", url)
-    resp = requests.get(url, timeout=10)
-    resp.encoding = "utf-8"
-    soup = BeautifulSoup(resp.text, "html.parser")
+for item in soup.select("article.product_pod"):
+    title = item.h3.a["title"]
+    price = item.select_one(".price_color").text
+    rating = item.select_one(".star-rating")["class"][1]
+    link = item.h3.a["href"]
 
-    for item in soup.select("article.product_pod"):
-        title = item.h3.a["title"]
-        link = urljoin(url, item.h3.a["href"])
-        price = item.select_one("p.price_color").text.strip()
-        stock = item.select_one("p.availability").text.strip()
-        rating = item.select_one("p.star-rating")["class"][1]
-        products.append({
-            "title": title,
-            "price": price,
-            "rating": rating,
-            "availability": stock,
-            "link": link,
-        })
+    products.append([title, price, rating, link])
 
-    nxt = soup.select_one("li.next a")
-    if not nxt:
-        break
-    url = urljoin(url, nxt["href"])
+# Display products
+for p in products:
+    print("Title:", p[0])
+    print("Price:", p[1])
+    print("Rating:", p[2])
+    print("Link:", p[3])
+    print()
 
-# display
-for p in products[:10]:
-    print(f"{p['title'][:40]:40} | {p['price']:8} | {p['rating']:5} | {p['link']}")
-print("\nTotal products:", len(products))
+print("Total products:", len(products))
 
-# save to CSV
+# Save to CSV
 with open("products.csv", "w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=["title", "price", "rating", "availability", "link"])
-    writer.writeheader()
+    writer = csv.writer(f)
+    writer.writerow(["Title", "Price", "Rating", "Link"])
     writer.writerows(products)
-print("Saved to products.csv")
 
+print("Products saved successfully!")
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 A7: WEB CRAWLER TO PULL PRODUCT INFORMATION AND LINKS FROM AN E-COMMERCE SITE
 
 AIM: Visit product listing pages, extract product details and links, follow pagination, save to CSV.
 
 CODE EXPLAINED
-1. Imports: csv, requests, BeautifulSoup, urljoin
-   requests downloads the page, BeautifulSoup parses the HTML, urljoin builds full URLs, csv saves output.
+1. Import libraries
+python
+import requests
+import csv
+from bs4 import BeautifulSoup
+requests: Downloads the website page.
+csv: Saves extracted data into a CSV file.
+BeautifulSoup: Parses HTML and extracts information from the webpage.
 
-2. BASE = "http://books.toscrape.com/"; MAX_PAGES = 3
-   Practice e-commerce site made for scraping. We crawl only 3 listing pages.
+2. Website URL
+python
+url = "http://books.toscrape.com/"
+response = requests.get(url)
+Stores the website address.
+requests.get() sends a request to the website.
+Downloads the webpage content.
 
-3. products = []; url = BASE
-   products stores results. url is the current page to fetch (starts at home page).
+3. Parse HTML
+python
+soup = BeautifulSoup(response.text, "html.parser")
+Converts HTML text into a searchable structure.
+html.parser is used to parse HTML content.
 
-4. for page in range(MAX_PAGES):
-   Loop once per listing page.
+4. Create product list
+python
+products = []
+Creates an empty list.
+Stores extracted product information.
 
-5. resp = requests.get(url, timeout=10); resp.encoding = "utf-8"
-   Downloads the HTML. timeout stops it hanging. Setting utf-8 avoids garbled characters (e.g. the pound sign).
+5. Extract product information
+python
+for item in soup.select("article.product_pod"):
+Selects all product containers from the webpage.
+article.product_pod is a CSS selector.
+Each product container represents one book.
 
-6. soup = BeautifulSoup(resp.text, "html.parser")
-   Parses the HTML text into a searchable tree.
+7. Store product information
+python
+products.append([title, price, rating, link])
+Adds extracted details to the products list.
+Each product is stored as a separate list.
 
-7. for item in soup.select("article.product_pod"):
-   CSS selector: every <article class="product_pod"> is one product card on the page.
+8. Display products
+python
+for p in products:
+    print("Title:", p[0])
+    print("Price:", p[1])
+    print("Rating:", p[2])
+    print("Link:", p[3])
+Displays product details one by one.
+p[0] represents title.
+p[1] represents price.
+p[2] represents rating.
+p[3] represents link.
 
-8. Extraction inside the loop
-   title  = item.h3.a["title"]            -> full book name (stored in the title attribute)
-   link   = urljoin(url, item.h3.a["href"]) -> relative link made into a full URL
-   price  = item.select_one("p.price_color").text.strip()
-   stock  = item.select_one("p.availability").text.strip()
-   rating = item.select_one("p.star-rating")["class"][1] -> the class list is ["star-rating", "Three"], so index 1 gives "Three".
-   Each product is appended as a dictionary.
+9. Count products
+python
+print("Total products:", len(products))
+- len() counts the total number of extracted products.
 
-9. nxt = soup.select_one("li.next a")
-   Finds the "next page" button. If none exists (last page), break. Otherwise url = urljoin(url, nxt["href"]) and the loop continues. This is the crawling (link-following) part.
-
-10. Printing: first 10 products in a formatted table, then the total count.
-
-11. csv.DictWriter -> writes header and all rows to products.csv.
-
-PIPELINE: fetch page -> parse -> extract products -> find next link -> repeat -> save CSV.
-
-NOTE: Needs internet. Run it once before the exam.
+10. Save data into CSV
+python
+with open("products.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["Title", "Price", "Rating", "Link"])
+    writer.writerows(products)
+Creates a CSV file named products.csv.
+csv.writer() writes data into the file.
+writerow() writes the column headings.
+writerows() writes all product records.
+with open() automatically closes the file.
 
 VIVA Q&A
-Q: What is a web crawler?
-A: A program that automatically visits pages, extracts data and follows links to find more pages. Search engines use crawlers to collect pages.
+Q1. What is a web crawler?
+A: A web crawler is a program that automatically visits websites and collects information from webpages.
 
-Q: Crawler vs scraper?
-A: Crawler discovers and follows links. Scraper extracts specific data. This program does both.
+Q2. What is web scraping?
+A: Web scraping is the process of extracting useful information from websites.
 
-Q: Libraries used?
-A: requests (fetch HTML) and BeautifulSoup (parse). Scrapy is a full framework alternative.
+Q3. What is the difference between web crawling and web scraping?
+A:Web crawling discovers and visits webpages.
+Web scraping extracts specific information from webpages.
 
-Q: What does BeautifulSoup do?
-A: Parses HTML into a tree searchable with tags and CSS selectors (select, select_one, find).
+Q4. Which libraries are used in this program?
+A: Requests, BeautifulSoup and CSV.
 
-Q: What is a CSS selector? Example?
-A: A pattern to pick elements. "article.product_pod" = article tags with class product_pod.
+Q5. What is Requests?
+A: Requests is a Python library used to send HTTP requests and download webpage content.
 
-Q: select vs select_one?
-A: select returns a list of all matches; select_one returns the first match.
+Q6. What is BeautifulSoup?
+A: BeautifulSoup is a Python library used to parse HTML and extract information from webpages.
 
-Q: How does it reach the next page?
-A: Reads the href of "li.next a", joins it to the current URL with urljoin, loops.
+Q7. What is HTML?
+A: HTML stands for HyperText Markup Language. It is used to create the structure of webpages.
 
-Q: Why urljoin?
-A: Page links are relative (page-2.html); urljoin makes complete URLs.
+Q8. What is a CSS selector?
+A: A CSS selector is used to select specific HTML elements based on their tags, classes or IDs.
 
-Q: What is robots.txt?
-A: A file telling crawlers which parts of a site not to visit. A polite crawler obeys it and adds delays between requests.
+Q9. What does requests.get() do?
+A: It sends a GET request to a website and retrieves its webpage content.
 
-Q: Why this website?
-A: It is a sandbox site meant for scraping practice, so it is legal and safe.
+Q10. What does response.text do?
+A: It returns the webpage content as text.
 
-Q: What is the crawl frontier?
-A: The queue of URLs still to visit. A full crawler uses a queue (BFS) plus a visited set to avoid repeats.
+Q11. What does BeautifulSoup() do?
+A: It converts HTML content into a searchable structure.
 
-Q: Why timeout=10?
-A: Avoids waiting forever if the server doesn't respond.
+Q12. What is html.parser?
+A: It is a built-in Python HTML parser used by BeautifulSoup.
 
-Q: What if the page uses JavaScript to load products?
-A: requests only gets raw HTML. Use Selenium or Playwright.
+Q13. What is the use of select()?
+A: It selects all HTML elements matching a given CSS selector.
 
-Q: Ethical/legal points?
-A: Respect robots.txt and terms of service, rate-limit requests, avoid personal data.
+Q14. What is the use of select_one()?
+A: It selects the first matching HTML element.
 
-Q: What does status code 200 / 404 mean?
-A: 200 = OK. 404 = page not found. Use resp.status_code or resp.raise_for_status() to check.
+Q15. What is CSV?
+A: CSV stands for Comma-Separated Values. It is a file format used to store tabular data.
+
+Q16. What does csv.writer() do?
+A: It writes data into a CSV file.
+
+Q17. What is the use of writerow()?
+A: It writes a single row into a CSV file.
+
+Q18. What is the use of writerows()?
+A: It writes multiple rows into a CSV file.
+
+Q19. What does len(products) do?
+A: It counts the total number of extracted products.
 
 SHORT VIVA ANSWER
-"This program is a web crawler and scraper. It downloads product listing pages using requests, parses the HTML with BeautifulSoup, extracts title, price, rating, availability and link of each product, follows the next-page link to crawl more pages, and saves all the data into a CSV file."
+"This program builds a web crawler to extract product information from an e-commerce website. First, the Requests library downloads the webpage.
+Then, BeautifulSoup parses the HTML content. We extract product title, price, rating and link using CSS selectors. Finally, we display the extracted 
+information and save it into a CSV file using the CSV library."
 
-EXTRA QUESTIONS
-Q: What libraries are used for web scraping in Python? A: requests (download pages), BeautifulSoup (parse HTML), Scrapy (full crawling framework), Selenium/Playwright (JavaScript pages).
-Q: What is PageRank? A: An algorithm that ranks web pages by the number and quality of links pointing to them. Used by Google's search engine.
