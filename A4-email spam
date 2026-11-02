@@ -1,43 +1,19 @@
 # Assignment 4: Agglomerative hierarchical clustering
 # pip install scikit-learn scipy matplotlib
-import matplotlib.pyplot as plt
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.datasets import load_iris
 from sklearn.cluster import AgglomerativeClustering
-from scipy.cluster.hierarchy import linkage, dendrogram
-
-# Dataset
-docs = [
-    "Cricket match won by India",
-    "Batsman scored a century",
-    "Football world cup final",
-    "Neural networks for image classification",
-    "Machine learning needs training data",
-    "Deep learning improves speech recognition",
-    "Stock market fell after interest rate hike",
-    "Banks raised interest rates",
-    "Share prices increased after company profit"
-]
-
-# Convert text into numbers
-vec = TfidfVectorizer(stop_words='english')
-X = vec.fit_transform(docs).toarray()
-
-# Agglomerative clustering
-model = AgglomerativeClustering(n_clusters=3, linkage='ward')
+from scipy.cluster.hierarchy import dendrogram, linkage
+import matplotlib.pyplot as plt
+# Load dataset
+X = load_iris().data
+# Hierarchical clustering
+model = AgglomerativeClustering(n_clusters=3)
 labels = model.fit_predict(X)
-
-# Display clusters
-for i in range(3):
-    print("\nCluster", i)
-    for doc, label in zip(docs, labels):
-        if label == i:
-            print("-", doc)
-
+print("Cluster Labels:", labels)
 # Dendrogram
-Z = linkage(X, method='ward')
-dendrogram(Z)
-plt.title("Agglomerative Hierarchical Clustering")
-plt.xlabel("Documents")
+dendrogram(linkage(X, method="ward"))
+plt.title("Hierarchical Clustering")
+plt.xlabel("Samples")
 plt.ylabel("Distance")
 plt.show()
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
