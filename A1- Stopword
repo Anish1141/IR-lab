@@ -1,43 +1,26 @@
 #1
 # Assignment 1: Text pre-processing (stop word removal + stemming)
-# pip install nltk
 import re
+from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-
-# stop words: use NLTK's list if available, else a built-in fallback (works offline)
-try:
-    import nltk
-    from nltk.corpus import stopwords
-    try:
-        stop_words = set(stopwords.words('english'))
-    except LookupError:
-        nltk.download('stopwords')
-        stop_words = set(stopwords.words('english'))
-except Exception:
-    stop_words = {"a", "an", "the", "is", "are", "was", "were", "of", "in", "on", "to",
-                  "for", "and", "or", "from", "with", "by", "it", "its", "this", "that",
-                  "as", "at", "be", "using", "large"}
 
 text = """Information retrieval is the process of finding relevant documents
 from a large collection. Search engines are using indexing and ranking
 to retrieve the documents quickly."""
 
-# 1. lowercase + tokenize
+# 1. Tokenization
 tokens = re.findall(r'[a-z]+', text.lower())
-print("Tokens:\n", tokens)
+print("\nTokens:\n", tokens)
 
-# 2. stop word removal
+# 2. Stop word removal
+stop_words = set(stopwords.words('english'))
 filtered = [w for w in tokens if w not in stop_words]
 print("\nAfter stop word removal:\n", filtered)
 
-# 3. stemming (Porter)
+# 3. Stemming
 ps = PorterStemmer()
 stemmed = [ps.stem(w) for w in filtered]
 print("\nAfter stemming:\n", stemmed)
-
-print("\nWord -> Stem")
-for w, s in zip(filtered, stemmed):
-    print(f"{w:15} -> {s}")
 
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 A1: TEXT PRE-PROCESSING (stop word removal + stemming)
@@ -45,64 +28,116 @@ A1: TEXT PRE-PROCESSING (stop word removal + stemming)
 AIM: Clean raw text so it is ready for indexing: tokenize, remove stop words, stem.
 
 CODE EXPLAINED
-1. import re / PorterStemmer
-   re = regular expressions for tokenizing. PorterStemmer = NLTK's rule-based stemmer (needs no data download).
+1. import re
+re stands for Regular Expression.
+It is used for searching and extracting patterns from text.
+Here, it is used for tokenization.
 
-2. try: ... stopwords.words('english')
-   Loads NLTK's English stop word list into a set. If NLTK data is missing it downloads it. If everything fails (offline), the except block uses a small built-in list. A set is used because lookup is O(1).
+2. from nltk.corpus import stopwords
+Imports the stopwords dataset from NLTK.
+Contains common English words such as the, is, are, of, and.
 
-3. text = """..."""
-   The input document (a paragraph).
+3. from nltk.stem import PorterStemmer
+Imports Porter Stemmer from NLTK.
+Used to reduce words to their root/stem form.
 
-4. tokens = re.findall(r'[a-z]+', text.lower())
-   text.lower() makes everything lowercase. The regex [a-z]+ finds every run of letters, so punctuation and digits are dropped. Result is a list of words (tokenization).
+4. text = """..."""
+Stores the input paragraph.
+Triple quotes allow us to write text across multiple lines.
 
-5. filtered = [w for w in tokens if w not in stop_words]
-   List comprehension: keep a word only if it is not a stop word (the, is, of...).
+5. tokens = re.findall(r'[a-z]+', text.lower())
+text.lower() converts all text into lowercase.
+re.findall() extracts matching words.
+[a-z]+ matches one or more lowercase letters.
+Removes punctuation and numbers.
+This process is called Tokenization.
 
-6. ps = PorterStemmer(); stemmed = [ps.stem(w) for w in filtered]
-   Applies Porter suffix-stripping to each word: retrieval -> retriev, documents -> document, engines -> engin.
+6. stop_words = set(stopwords.words('english'))
+Loads the English stop words.
+Converts them into a set for faster searching.
+Example: the, is, are, from.
 
-7. Final loop prints word -> stem side by side with zip().
+7. filtered = [w for w in tokens if w not in stop_words]
+Removes common words from the token list.
+Keeps only meaningful words.
+Uses list comprehension.
 
-PIPELINE: raw text -> lowercase -> tokens -> remove stop words -> stems.
+8. ps = PorterStemmer()
+Creates an object of Porter Stemmer.
+Used to perform stemming.
 
-OUTPUT TO EXPECT: tokens list, filtered list (shorter), stemmed list, and a two-column table.
+9. stemmed = [ps.stem(w) for w in filtered]
+Applies stemming to every word.
+Reduces words to their stem form.
+
+Examples:
+retrieval → retriev
+documents → document
+indexing → index
+quickly → quickli
 
 VIVA Q&A
-Q: Why pre-process text?
-A: Raw text has noise. Cleaning shrinks the vocabulary and makes query words match document words.
+VIVA QUESTIONS AND ANSWERS
+Q1. What is text preprocessing?
+A: Text preprocessing is the process of cleaning raw text before using it for information retrieval or NLP.
 
-Q: What are stop words? Why remove them?
-A: Very common words (the, is, of) with little meaning. Removing them saves index space and improves ranking.
+Q2. Why do we perform text preprocessing?
+A: To remove unnecessary words, reduce vocabulary size and improve search efficiency.
 
-Q: What is stemming?
-A: Reducing a word to its root (retrieval, retrieve -> retriev). The stem need not be a real word.
+Q3. What is tokenization?
+A: Tokenization is the process of splitting text into individual words or tokens.
 
-Q: Stemming vs lemmatization?
-A: Stemming chops suffixes by rules (fast, crude). Lemmatization uses a dictionary and returns a real word (better -> good), slower.
+Q4. What are stop words?
+A: Stop words are common words that usually carry less meaningful information, such as the, is, are, of and in.
 
-Q: Which stemmer did you use?
-A: Porter stemmer. Others: Lancaster (more aggressive), Snowball.
+Q5. Why do we remove stop words?
+A: To reduce unnecessary words and improve information retrieval efficiency.
 
-Q: What does re.findall(r'[a-z]+') do?
-A: Extracts runs of letters only. This is tokenization.
+Q6. What is stemming?
+A: Stemming is the process of reducing words to their root or stem form.
 
-Q: Why lowercase first?
-A: So "Search" and "search" are the same term.
+Q7. Which stemming algorithm is used here?
+A: Porter Stemmer.
 
-Q: Why a set for stop words?
-A: Membership check is O(1) instead of scanning a list.
+Q8. What is NLTK?
+A: NLTK stands for Natural Language Toolkit. It is a Python library used for Natural Language Processing.
 
-Q: Drawback of stemming?
-A: Over-stemming (different words, same stem) and under-stemming. Example: "quickly" -> "quickli".
+Q9. What is the use of the re library?
+A: It is used for pattern matching and text processing using regular expressions.
 
-Q: What other pre-processing steps exist?
-A: Removing punctuation/numbers, handling case, lemmatization, n-grams, spelling correction.
+Q10. What does text.lower() do?
+A: It converts all uppercase letters into lowercase letters.
 
-SHORT VIVA ANSWER
-"This program takes a text, converts it to lowercase, splits it into words, removes stop words and applies Porter stemming to reduce each word to its root form. This is the pre-processing step before indexing in Information Retrieval."
+Q11. What does re.findall() do?
+A: It finds all occurrences of a specified pattern in a string and returns them as a list.
 
-EXTRA QUESTIONS
-Q: What is TF-IDF? A: Term Frequency-Inverse Document Frequency. TF = how often a word appears in a doc. IDF = log(total docs / docs containing the word). Words common in all docs get low weight.
-Q: What libraries are used for text processing in Python? A: nltk (NLP), re (regex), scikit-learn (vectorizers), pandas (data handling).
+Q12. What does [a-z]+ mean?
+A: It matches one or more lowercase English letters.
+
+Q13. What is Porter Stemmer?
+A: It is a rule-based stemming algorithm that removes prefixes or suffixes from words.
+
+Q14. What is the difference between stemming and lemmatization?
+A: Stemming removes word endings using rules, whereas lemmatization converts words into their meaningful dictionary form.
+
+Q15. Is the output of stemming always a meaningful English word?
+A: No. A stem may not be a meaningful dictionary word. Example: quickly → quickli.
+
+Q16. What is the difference between a list and a set?
+A: A list allows duplicate elements, whereas a set stores unique elements and provides fast membership checking.
+
+Q17. Give an example of stemming.
+A:Playing → play
+Connected → connect
+Retrieval → retriev
+
+Q18. What are other preprocessing techniques?
+A: Removing punctuation, removing numbers, tokenization, stop word removal, stemming and lemmatization.
+
+Q19. What is TF-IDF?
+A: TF-IDF stands for Term Frequency-Inverse Document Frequency. It measures the importance of a word in a document.
+
+Explain 
+"This program performs text preprocessing using Python and NLTK. First, it converts the input text into lowercase and tokenizes it using regular expressions. 
+Then, it removes common English stop words using the NLTK stopwords dataset. Finally, it applies Porter Stemmer to reduce words to their root form. 
+This process helps improve information retrieval."
