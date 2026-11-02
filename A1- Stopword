@@ -1,27 +1,22 @@
 #1
 # Assignment 1: Text pre-processing (stop word removal + stemming)
-import re
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-
-text = """Information retrieval is the process of finding relevant documents
-from a large collection. Search engines are using indexing and ranking
-to retrieve the documents quickly."""
-
-# 1. Tokenization
-tokens = re.findall(r'[a-z]+', text.lower())
-print("\nTokens:\n", tokens)
-
-# 2. Stop word removal
+from nltk.tokenize import word_tokenize
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt_tab')
+text = "The students are studying and playing games happily."
+# Tokenization
+words = word_tokenize(text.lower())
+# Stop word removal and stemming
 stop_words = set(stopwords.words('english'))
-filtered = [w for w in tokens if w not in stop_words]
-print("\nAfter stop word removal:\n", filtered)
-
-# 3. Stemming
-ps = PorterStemmer()
-stemmed = [ps.stem(w) for w in filtered]
-print("\nAfter stemming:\n", stemmed)
-
+stemmer = PorterStemmer()
+result = [stemmer.stem(w) for w in words
+          if w.isalpha() and w not in stop_words]
+print("Original Text:", text)
+print("Processed Text:", result)
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 A1: TEXT PRE-PROCESSING (stop word removal + stemming)
 
