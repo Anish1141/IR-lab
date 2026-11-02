@@ -1,55 +1,26 @@
 # Assignment 3: E-mail spam filtering using text classification (Naive Bayes)
 # pip install scikit-learn
-
-from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
 from sklearn.metrics import accuracy_score
-
-# Dataset
-emails = [
-    ("Win a free iPhone now", "spam"),
-    ("You won a lottery", "spam"),
-    ("Get cheap loans instantly", "spam"),
-    ("Claim your free prize now", "spam"),
-    ("Account suspended, verify now", "spam"),
-    ("Buy cheap medicines online", "spam"),
-    ("Meeting scheduled tomorrow", "ham"),
-    ("Please send the assignment report", "ham"),
-    ("Discuss the project today", "ham"),
-    ("Lunch with the team", "ham"),
-    ("Machine learning notes uploaded", "ham"),
-    ("Practical exam on Monday", "ham")
-]
-
-# Separate emails and labels
-texts = [x[0] for x in emails]
-labels = [x[1] for x in emails]
-
-# Convert text into numbers
-cv = CountVectorizer(stop_words='english')
-X = cv.fit_transform(texts)
-
-# Split dataset
+# Load dataset (spam.csv)
+df = pd.read_csv(r"spam.csv", encoding="latin-1")
+df = df.iloc[:, :2]
+df.columns = ["label", "message"]
+# Split data
 X_train, X_test, y_train, y_test = train_test_split(
-    X, labels, test_size=0.25, random_state=42
-)
-
-# Train Naive Bayes model
-model = MultinomialNB()
+    df.message, df.label, test_size=0.2, random_state=42)
+# Train classifier
+model = make_pipeline(CountVectorizer(), MultinomialNB())
 model.fit(X_train, y_train)
-
-# Test model
-y_pred = model.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
-
-# Predict new emails
-new_emails = ["Win a free prize", "Send the project report"]
-new_X = cv.transform(new_emails)
-predictions = model.predict(new_X)
-
-for mail, result in zip(new_emails, predictions):
-    print(mail, "->", result.upper())
+# Test accuracy
+print("Accuracy:", accuracy_score(y_test, model.predict(X_test)))
+# Predict email
+email = input("Enter email message: ")
+print("Prediction:", model.predict([email])[0])
 
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 A4: E-MAIL SPAM FILTERING USING TEXT CLASSIFICATION (Naive Bayes)
