@@ -1,1 +1,202 @@
+# Assignment 3: E-mail spam filtering using text classification (Naive Bayes)
+# pip install scikit-learn
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
+
+# Dataset
+emails = [
+    ("Win a free iPhone now", "spam"),
+    ("You won a lottery", "spam"),
+    ("Get cheap loans instantly", "spam"),
+    ("Claim your free prize now", "spam"),
+    ("Account suspended, verify now", "spam"),
+    ("Buy cheap medicines online", "spam"),
+    ("Meeting scheduled tomorrow", "ham"),
+    ("Please send the assignment report", "ham"),
+    ("Discuss the project today", "ham"),
+    ("Lunch with the team", "ham"),
+    ("Machine learning notes uploaded", "ham"),
+    ("Practical exam on Monday", "ham")
+]
+
+# Separate emails and labels
+texts = [x[0] for x in emails]
+labels = [x[1] for x in emails]
+
+# Convert text into numbers
+cv = CountVectorizer(stop_words='english')
+X = cv.fit_transform(texts)
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, labels, test_size=0.25, random_state=42
+)
+
+# Train Naive Bayes model
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Test model
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# Predict new emails
+new_emails = ["Win a free prize", "Send the project report"]
+new_X = cv.transform(new_emails)
+predictions = model.predict(new_X)
+
+for mail, result in zip(new_emails, predictions):
+    print(mail, "->", result.upper())
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+A4: E-MAIL SPAM FILTERING USING TEXT CLASSIFICATION (Naive Bayes)
+
+AIM: Train a classifier on labeled e-mails and predict whether new mail is spam or ham.
+
+CODE EXPLAINED
+1. Imports
+CountVectorizer: Converts text into numerical word-count vectors.
+train_test_split: Splits data into training and testing sets.
+MultinomialNB: Naive Bayes classification algorithm.
+accuracy_score: Calculates the accuracy of the model.
+
+2. Dataset
+python
+emails = [
+    ("Win a free iPhone now", "spam"),
+    ("Meeting scheduled tomorrow", "ham")
+]
+Stores email messages with their labels.
+
+spam means unwanted emails.
+ham means genuine or normal emails.
+Our simplified dataset contains 12 emails: 6 spam and 6 ham.
+
+3. Separate emails and labels
+python
+texts = [x[0] for x in emails]
+labels = [x[1] for x in emails]
+texts stores email messages.
+
+labels stores email categories (spam or ham).
+Uses list comprehension.
+
+4. Convert text into numbers
+python
+cv = CountVectorizer(stop_words='english')
+X = cv.fit_transform(texts)
+Creates a CountVectorizer object.
+
+Converts text into numerical word counts.
+Removes common English stop words.
+fit_transform() learns the vocabulary and converts emails into numerical vectors.
+This technique is called Bag of Words.
+
+5. Split dataset
+python
+X_train, X_test, y_train, y_test = train_test_split(
+    X, labels, test_size=0.25, random_state=42
+)
+Splits the dataset into training and testing data.
+
+test_size=0.25 means 25% testing and 75% training.
+random_state=42 ensures the same split every time.
+
+6. Train Naive Bayes model
+python
+model = MultinomialNB()
+model.fit(X_train, y_train)
+Creates a Multinomial Naive Bayes classifier.
+
+fit() trains the model using training data.
+Learns patterns associated with spam and ham emails.
+
+7. Test the model
+python
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+predict() predicts the categories of test emails.
+
+accuracy_score() calculates how many predictions are correct.
+
+8. Predict new emails
+python
+new_emails = ["Win a free prize", "Send the project report"]
+new_X = cv.transform(new_emails)
+predictions = model.predict(new_X)
+Stores two new email messages.
+
+transform() converts new emails into numerical vectors using the existing vocabulary.
+predict() classifies them as spam or ham.
+
+9. Display predictions
+python
+for mail, result in zip(new_emails, predictions):
+    print(mail, "->", result.upper())
+zip() combines each email with its prediction.
+
+upper() converts the result into uppercase.
+Displays SPAM or HAM.
+
+VIVA Q&A
+Q2. What is text classification?
+A: Text classification is the process of assigning text into predefined categories using a trained model.
+
+Q3. What is Naive Bayes?
+A: Naive Bayes is a supervised machine learning algorithm based on Bayes' theorem.
+
+Q4. Why is it called Naive Bayes?
+A: Because it assumes that all words are independent of each other given the class.
+
+Q5. What is Multinomial Naive Bayes?
+A: It is a Naive Bayes algorithm that works with word frequencies or counts.
+
+Q6. What is CountVectorizer?
+A: It converts text into numerical word-count vectors.
+
+Q7. What is Bag of Words?
+A: It is a text representation technique that counts the frequency of words without considering their order.
+
+Q8. What is the difference between spam and ham?
+A:Spam: Unwanted or promotional emails.
+Ham: Genuine or normal emails.
+
+Q9. What is training data?
+A: Training data is the data used to teach the machine learning model.
+
+Q10. What is testing data?
+A: Testing data is used to check how accurately the trained model predicts unseen data.
+
+Q11. What does test_size=0.25 mean?
+A: It means 25% of the dataset is used for testing and 75% for training.
+
+Q12. What is random_state=42?
+A: It ensures that the dataset is split in the same way every time.
+
+Q13. What does fit() do?
+A: It trains the machine learning model using the training data.
+
+Q14. What does predict() do?
+A: It predicts the class or category of new input data.
+
+Q15. What is accuracy?
+A: Accuracy is the percentage of correctly predicted results out of total predictions.
+
+Q16. What is the use of stop_words='english'?
+A: It removes common English words such as the, is, and, and of.
+
+Q17. What is supervised learning?
+A: Supervised learning is a machine learning technique in which a model learns from labeled data.
+
+Q18. What is the difference between fit_transform() and transform()?
+A:fit_transform() learns the vocabulary and converts text into vectors.
+transform() converts new text using the already learned vocabulary.
+
+SHORT VIVA ANSWER
+"This program implements email spam filtering using the Naive Bayes classification algorithm. First, we create a dataset containing spam and ham emails. 
+Then, CountVectorizer converts the email text into numerical word-count vectors. Next, we split the dataset into training and testing data. 
+We train the Multinomial Naive Bayes model and evaluate its accuracy. Finally, we use the trained model to predict whether new emails are spam or ham."
 
