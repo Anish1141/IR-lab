@@ -1,180 +1,182 @@
-# Assignment 4: Agglomerative hierarchical clustering
-# pip install scikit-learn scipy matplotlib
-import matplotlib.pyplot as plt
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import AgglomerativeClustering
-from scipy.cluster.hierarchy import linkage, dendrogram
+# Assignment 5: Web crawler to pull product information and links from an e-commerce site
+# pip install requests beautifulsoup4
 
-# Dataset
-docs = [
-    "Cricket match won by India",
-    "Batsman scored a century",
-    "Football world cup final",
-    "Neural networks for image classification",
-    "Machine learning needs training data",
-    "Deep learning improves speech recognition",
-    "Stock market fell after interest rate hike",
-    "Banks raised interest rates",
-    "Share prices increased after company profit"
-]
+import requests
+import csv
+from bs4 import BeautifulSoup
 
-# Convert text into numbers
-vec = TfidfVectorizer(stop_words='english')
-X = vec.fit_transform(docs).toarray()
+# Website
+url = "http://books.toscrape.com/"
+response = requests.get(url)
 
-# Agglomerative clustering
-model = AgglomerativeClustering(n_clusters=3, linkage='ward')
-labels = model.fit_predict(X)
+soup = BeautifulSoup(response.text, "html.parser")
 
-# Display clusters
-for i in range(3):
-    print("\nCluster", i)
-    for doc, label in zip(docs, labels):
-        if label == i:
-            print("-", doc)
+# Extract product information
+products = []
 
-# Dendrogram
-Z = linkage(X, method='ward')
-dendrogram(Z)
-plt.title("Agglomerative Hierarchical Clustering")
-plt.xlabel("Documents")
-plt.ylabel("Distance")
-plt.show()
+for item in soup.select("article.product_pod"):
+    title = item.h3.a["title"]
+    price = item.select_one(".price_color").text
+    rating = item.select_one(".star-rating")["class"][1]
+    link = item.h3.a["href"]
+
+    products.append([title, price, rating, link])
+
+# Display products
+for p in products:
+    print("Title:", p[0])
+    print("Price:", p[1])
+    print("Rating:", p[2])
+    print("Link:", p[3])
+    print()
+
+print("Total products:", len(products))
+
+# Save to CSV
+with open("products.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["Title", "Price", "Rating", "Link"])
+    writer.writerows(products)
+
+print("Products saved successfully!")
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-A5: AGGLOMERATIVE HIERARCHICAL CLUSTERING
+A7: WEB CRAWLER TO PULL PRODUCT INFORMATION AND LINKS FROM AN E-COMMERCE SITE
 
-AIM: Group similar documents without labels using bottom-up hierarchical clustering, and draw the dendrogram.
+AIM: Visit product listing pages, extract product details and links, follow pagination, save to CSV.
 
 CODE EXPLAINED
 1. Import libraries
-matplotlib.pyplot: Used to draw graphs.
-TfidfVectorizer: Converts text into numerical TF-IDF vectors.
-AgglomerativeClustering: Performs hierarchical clustering.
-linkage: Calculates how clusters are merged.
-dendrogram: Draws the hierarchical tree diagram.
-%matplotlib inline: Displays graphs directly inside Jupyter Notebook.
-
-2. Dataset
 python
-docs = [
-    "Cricket match won by India",
-    "Batsman scored a century",
-    "Football world cup final",
-    "Neural networks for image classification",
-    "Machine learning needs training data",
-    "Deep learning improves speech recognition",
-    "Stock market fell after interest rate hike",
-    "Banks raised interest rates",
-    "Share prices increased after company profit"
-]
-Stores 9 sample documents.
-Documents are related to three topics:
-Sports
-AI and Machine Learning
-Finance
-No predefined labels are given.
-The algorithm automatically groups similar documents.
+import requests
+import csv
+from bs4 import BeautifulSoup
+requests: Downloads the website page.
+csv: Saves extracted data into a CSV file.
+BeautifulSoup: Parses HTML and extracts information from the webpage.
 
-3. Convert text into numbers
+2. Website URL
 python
-vec = TfidfVectorizer(stop_words='english')
-X = vec.fit_transform(docs).toarray()
-Creates a TF-IDF vectorizer.
-Converts documents into numerical vectors.
-Removes common English stop words.
-fit_transform() learns important words and converts the documents.
-toarray() converts the sparse matrix into a dense array.
-This technique is called TF-IDF (Term Frequency-Inverse Document Frequency).
+url = "http://books.toscrape.com/"
+response = requests.get(url)
+Stores the website address.
+requests.get() sends a request to the website.
+Downloads the webpage content.
 
-4. Apply Agglomerative Clustering
+3. Parse HTML
 python
-model = AgglomerativeClustering(n_clusters=3, linkage='ward')
-labels = model.fit_predict(X)
-Creates an Agglomerative Clustering model.
-n_clusters=3 specifies that we need 3 clusters.
-linkage='ward' uses Ward's method to merge clusters.
-fit_predict() performs clustering and assigns cluster numbers.
+soup = BeautifulSoup(response.text, "html.parser")
+Converts HTML text into a searchable structure.
+html.parser is used to parse HTML content.
 
-5. Display clusters
+4. Create product list
 python
-for i in range(3):
-    print("\nCluster", i)
-    for doc, label in zip(docs, labels):
-        if label == i:
-            print("-", doc)
-Loops through all 3 clusters.
-zip() combines documents with their cluster labels.
-Prints documents belonging to each cluster.
+products = []
+Creates an empty list.
+Stores extracted product information.
 
-OUTPUT TO EXPECT: 3 clusters printed, dendrogram.png created. Not perfect because the data is tiny (the neural networks doc landed with finance).
+5. Extract product information
+python
+for item in soup.select("article.product_pod"):
+Selects all product containers from the webpage.
+article.product_pod is a CSS selector.
+Each product container represents one book.
+
+7. Store product information
+python
+products.append([title, price, rating, link])
+Adds extracted details to the products list.
+Each product is stored as a separate list.
+
+8. Display products
+python
+for p in products:
+    print("Title:", p[0])
+    print("Price:", p[1])
+    print("Rating:", p[2])
+    print("Link:", p[3])
+Displays product details one by one.
+p[0] represents title.
+p[1] represents price.
+p[2] represents rating.
+p[3] represents link.
+
+9. Count products
+python
+print("Total products:", len(products))
+- len() counts the total number of extracted products.
+
+10. Save data into CSV
+python
+with open("products.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["Title", "Price", "Rating", "Link"])
+    writer.writerows(products)
+Creates a CSV file named products.csv.
+csv.writer() writes data into the file.
+writerow() writes the column headings.
+writerows() writes all product records.
+with open() automatically closes the file.
 
 VIVA Q&A
-Q1. What is clustering?
-A: Clustering is the process of grouping similar data points together without predefined labels.
+Q1. What is a web crawler?
+A: A web crawler is a program that automatically visits websites and collects information from webpages.
 
-Q2. What is hierarchical clustering?
-A: It is a clustering technique that creates a hierarchy or tree of clusters.
+Q2. What is web scraping?
+A: Web scraping is the process of extracting useful information from websites.
 
-Q3. What is Agglomerative Clustering?
-A: It is a bottom-up hierarchical clustering algorithm in which each document starts as a separate cluster and similar clusters are merged repeatedly.
+Q3. What is the difference between web crawling and web scraping?
+A:Web crawling discovers and visits webpages.
+Web scraping extracts specific information from webpages.
 
-Q4. What is the meaning of bottom-up approach?
-A: It means starting with individual data points and gradually combining them into larger clusters.
+Q4. Which libraries are used in this program?
+A: Requests, BeautifulSoup and CSV.
 
-Q5. What is unsupervised learning?
-A: It is a machine learning technique that works with unlabelled data and finds hidden patterns.
+Q5. What is Requests?
+A: Requests is a Python library used to send HTTP requests and download webpage content.
 
-Q6. Is Agglomerative Clustering supervised or unsupervised?
-A: Unsupervised learning.
+Q6. What is BeautifulSoup?
+A: BeautifulSoup is a Python library used to parse HTML and extract information from webpages.
 
-Q7. What is a dendrogram?
-A: A dendrogram is a tree-like diagram that shows how clusters are formed and merged.
+Q7. What is HTML?
+A: HTML stands for HyperText Markup Language. It is used to create the structure of webpages.
 
-Q8. Why is a dendrogram used?
-A: It is used to visualize cluster formation and decide the number of clusters.
+Q8. What is a CSS selector?
+A: A CSS selector is used to select specific HTML elements based on their tags, classes or IDs.
 
-Q9. Which library is used to draw a dendrogram?
-A: SciPy.
+Q9. What does requests.get() do?
+A: It sends a GET request to a website and retrieves its webpage content.
 
-Q10. Which function is used to draw a dendrogram?
-A: dendrogram().
+Q10. What does response.text do?
+A: It returns the webpage content as text.
 
-Q11. What is TF-IDF?
-A: TF-IDF stands for Term Frequency-Inverse Document Frequency. It measures the importance of a word in a document.
+Q11. What does BeautifulSoup() do?
+A: It converts HTML content into a searchable structure.
 
-Q12. Why is TF-IDF used?
-A: It converts text into numerical values and gives more importance to meaningful words.
+Q12. What is html.parser?
+A: It is a built-in Python HTML parser used by BeautifulSoup.
 
-Q13. What is Ward linkage?
-A: Ward linkage is a method that merges clusters by minimizing the increase in within-cluster variance.
+Q13. What is the use of select()?
+A: It selects all HTML elements matching a given CSS selector.
 
-Q14. What does n_clusters=3 mean?
-A: It specifies that the algorithm should create 3 clusters.
+Q14. What is the use of select_one()?
+A: It selects the first matching HTML element.
 
-Q15. What does fit_predict() do?
-A: It performs clustering and returns the cluster labels for each document.
+Q15. What is CSV?
+A: CSV stands for Comma-Separated Values. It is a file format used to store tabular data.
 
-Q16. What is the difference between Agglomerative and Divisive clustering?
-A:Agglomerative: Bottom-up approach; merges clusters.
-Divisive: Top-down approach; splits clusters.
+Q16. What does csv.writer() do?
+A: It writes data into a CSV file.
 
-Q17. What is linkage?
-A: Linkage defines how the distance between two clusters is calculated.
+Q17. What is the use of writerow()?
+A: It writes a single row into a CSV file.
 
-Q18. Name different linkage methods.
-A:Single linkage
-Complete linkage
-Average linkage
-Ward linkage
+Q18. What is the use of writerows()?
+A: It writes multiple rows into a CSV file.
 
-Q19. What does the height of a dendrogram represent?
-A: It represents the distance or dissimilarity at which clusters are merged.
-
-Q20. What is the use of .toarray()?
-A: It converts a sparse matrix into a dense array.
+Q19. What does len(products) do?
+A: It counts the total number of extracted products.
 
 SHORT VIVA ANSWER
-"This program implements Agglomerative Hierarchical Clustering using Python. First, we create a dataset containing nine documents. 
-Then, TF-IDF converts the text into numerical vectors. We apply Agglomerative Clustering using Ward linkage to group similar documents into three clusters. 
-Finally, we use a dendrogram to visualize how the clusters are formed. It is an unsupervised learning algorithm because no predefined labels are given."
-
+"This program builds a web crawler to extract product information from an e-commerce website. First, the Requests library downloads the webpage.
+Then, BeautifulSoup parses the HTML content. We extract product title, price, rating and link using CSS selectors. Finally, we display the extracted 
+information and save it into a CSV file using the CSV library."
