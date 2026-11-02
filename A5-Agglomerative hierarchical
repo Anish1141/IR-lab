@@ -67,35 +67,25 @@ Extracts the product webpage link.
 
 VIVA Q&A
 Q1. What is a web crawler?
-
 A: A web crawler is a program that automatically visits websites and collects information from webpages.
 
 Q2. What is web scraping?
-
 A: Web scraping is the process of extracting useful information from websites.
 
 Q3. What is the difference between web crawling and web scraping?
-
-A:
-
-Web crawling discovers and visits webpages.
-
+A:Web crawling discovers and visits webpages.
 Web scraping extracts specific information from webpages.
 
 Q4. Which libraries are used in this program?
-
 A: Requests and BeautifulSoup.
 
 Q5. What is Requests?
-
 A: Requests is a Python library used to send HTTP requests and download webpage content.
 
 Q6. What is BeautifulSoup?
-
 A: BeautifulSoup is a Python library used to parse HTML and extract information from webpages.
 
 Q7. What is HTML?
-
 A: HTML stands for HyperText Markup Language. It is used to create the structure of webpages.
 
 Q8. What is a CSS selector?
