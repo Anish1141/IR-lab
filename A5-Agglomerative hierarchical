@@ -1,123 +1,180 @@
-#5
-# Assignment 5: Agglomerative hierarchical clustering
+# Assignment 4: Agglomerative hierarchical clustering
 # pip install scikit-learn scipy matplotlib
-import matplotlib
-matplotlib.use("Agg")  # saves the figure; remove this line to use plt.show()
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import linkage, dendrogram
 
+# Dataset
 docs = [
-    "Cricket match was won by India in the final over",
-    "The batsman scored a century in the test match",
-    "Football world cup final is played tonight",
-    "Neural networks are used for image classification",
-    "Machine learning models need training data",
+    "Cricket match won by India",
+    "Batsman scored a century",
+    "Football world cup final",
+    "Neural networks for image classification",
+    "Machine learning needs training data",
     "Deep learning improves speech recognition",
-    "The stock market fell after the interest rate hike",
-    "Banks raised interest rates to control inflation",
-    "Share prices rose as the company reported profit",
+    "Stock market fell after interest rate hike",
+    "Banks raised interest rates",
+    "Share prices increased after company profit"
 ]
 
-# text -> TF-IDF vectors
-vec = TfidfVectorizer(stop_words="english")
+# Convert text into numbers
+vec = TfidfVectorizer(stop_words='english')
 X = vec.fit_transform(docs).toarray()
 
-# agglomerative clustering (bottom-up)
-k = 3
-model = AgglomerativeClustering(n_clusters=k, linkage="ward")
+# Agglomerative clustering
+model = AgglomerativeClustering(n_clusters=3, linkage='ward')
 labels = model.fit_predict(X)
 
-for c in range(k):
-    print(f"\nCluster {c}:")
-    for d, l in zip(docs, labels):
-        if l == c:
-            print("  -", d)
+# Display clusters
+for i in range(3):
+    print("\nCluster", i)
+    for doc, label in zip(docs, labels):
+        if label == i:
+            print("-", doc)
 
-# dendrogram
-Z = linkage(X, method="ward")
-plt.figure(figsize=(10, 5))
-dendrogram(Z, labels=[f"D{i+1}" for i in range(len(docs))])
-plt.title("Agglomerative Hierarchical Clustering - Dendrogram")
+# Dendrogram
+Z = linkage(X, method='ward')
+dendrogram(Z)
+plt.title("Agglomerative Hierarchical Clustering")
 plt.xlabel("Documents")
 plt.ylabel("Distance")
-plt.savefig("dendrogram.png")
-print("\nDendrogram saved as dendrogram.png")
-
+plt.show()
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 A5: AGGLOMERATIVE HIERARCHICAL CLUSTERING
 
 AIM: Group similar documents without labels using bottom-up hierarchical clustering, and draw the dendrogram.
 
 CODE EXPLAINED
-1. matplotlib.use("Agg")
-   Makes matplotlib save images instead of opening a window (works without a display). Delete this line if you want plt.show().
+1. Import libraries
+matplotlib.pyplot: Used to draw graphs.
+TfidfVectorizer: Converts text into numerical TF-IDF vectors.
+AgglomerativeClustering: Performs hierarchical clustering.
+linkage: Calculates how clusters are merged.
+dendrogram: Draws the hierarchical tree diagram.
+%matplotlib inline: Displays graphs directly inside Jupyter Notebook.
 
-2. docs = [...]
-   9 short documents on three topics: sports, AI/ML, finance. No labels given to the algorithm.
+2. Dataset
+python
+docs = [
+    "Cricket match won by India",
+    "Batsman scored a century",
+    "Football world cup final",
+    "Neural networks for image classification",
+    "Machine learning needs training data",
+    "Deep learning improves speech recognition",
+    "Stock market fell after interest rate hike",
+    "Banks raised interest rates",
+    "Share prices increased after company profit"
+]
+Stores 9 sample documents.
+Documents are related to three topics:
+Sports
+AI and Machine Learning
+Finance
+No predefined labels are given.
+The algorithm automatically groups similar documents.
 
-3. vec = TfidfVectorizer(stop_words="english"); X = vec.fit_transform(docs).toarray()
-   Converts each document into a TF-IDF vector (weights important words higher). .toarray() makes it a dense matrix because Ward linkage needs dense data.
+3. Convert text into numbers
+python
+vec = TfidfVectorizer(stop_words='english')
+X = vec.fit_transform(docs).toarray()
+Creates a TF-IDF vectorizer.
+Converts documents into numerical vectors.
+Removes common English stop words.
+fit_transform() learns important words and converts the documents.
+toarray() converts the sparse matrix into a dense array.
+This technique is called TF-IDF (Term Frequency-Inverse Document Frequency).
 
-4. model = AgglomerativeClustering(n_clusters=3, linkage="ward"); labels = model.fit_predict(X)
-   Starts with 9 clusters (one per doc), repeatedly merges the two clusters whose merge increases variance the least (Ward), until 3 remain. labels[i] = cluster number of doc i.
+4. Apply Agglomerative Clustering
+python
+model = AgglomerativeClustering(n_clusters=3, linkage='ward')
+labels = model.fit_predict(X)
+Creates an Agglomerative Clustering model.
+n_clusters=3 specifies that we need 3 clusters.
+linkage='ward' uses Ward's method to merge clusters.
+fit_predict() performs clustering and assigns cluster numbers.
 
-5. Printing loop
-   For each cluster number, prints the documents that have that label.
-
-6. Z = linkage(X, method="ward")
-   scipy computes the full merge history (which clusters merged, at what distance). This is the data for the tree.
-
-7. dendrogram(Z, labels=[D1..D9]); plt.savefig("dendrogram.png")
-   Draws the tree. Bottom = documents, height = distance at which clusters merged. Saved as dendrogram.png.
-
-PIPELINE: text -> TF-IDF -> agglomerative clustering -> clusters + dendrogram.
+5. Display clusters
+python
+for i in range(3):
+    print("\nCluster", i)
+    for doc, label in zip(docs, labels):
+        if label == i:
+            print("-", doc)
+Loops through all 3 clusters.
+zip() combines documents with their cluster labels.
+Prints documents belonging to each cluster.
 
 OUTPUT TO EXPECT: 3 clusters printed, dendrogram.png created. Not perfect because the data is tiny (the neural networks doc landed with finance).
 
 VIVA Q&A
-Q: What is clustering? Clustering vs classification?
-A: Grouping similar items without labels (unsupervised). Classification needs labeled training data.
+Q1. What is clustering?
+A: Clustering is the process of grouping similar data points together without predefined labels.
 
-Q: What is agglomerative clustering?
-A: Bottom-up hierarchical method: each doc starts as its own cluster; the two closest clusters are merged repeatedly.
+Q2. What is hierarchical clustering?
+A: It is a clustering technique that creates a hierarchy or tree of clusters.
 
-Q: Agglomerative vs divisive?
-A: Agglomerative merges (bottom-up); divisive splits (top-down).
+Q3. What is Agglomerative Clustering?
+A: It is a bottom-up hierarchical clustering algorithm in which each document starts as a separate cluster and similar clusters are merged repeatedly.
 
-Q: What is a dendrogram?
-A: A tree showing the order of merges and the distance of each merge. Cutting it at a height gives clusters.
+Q4. What is the meaning of bottom-up approach?
+A: It means starting with individual data points and gradually combining them into larger clusters.
 
-Q: What is linkage? Types?
-A: Rule for distance between clusters: single (nearest points), complete (farthest), average, ward (minimum variance increase).
+Q5. What is unsupervised learning?
+A: It is a machine learning technique that works with unlabelled data and finds hidden patterns.
 
-Q: Why ward?
-A: Gives compact, balanced clusters; common default.
+Q6. Is Agglomerative Clustering supervised or unsupervised?
+A: Unsupervised learning.
 
-Q: Why TF-IDF instead of counts?
-A: Down-weights common words, so document similarity is more meaningful.
+Q7. What is a dendrogram?
+A: A dendrogram is a tree-like diagram that shows how clusters are formed and merged.
 
-Q: How do you choose the number of clusters?
-A: Cut the dendrogram at a big jump in merge distance, or use silhouette score. Here k=3 was fixed.
+Q8. Why is a dendrogram used?
+A: It is used to visualize cluster formation and decide the number of clusters.
 
-Q: Advantages and disadvantages?
-A: No need to know k in advance, gives a hierarchy. But O(n^2) memory/time and merges can't be undone.
+Q9. Which library is used to draw a dendrogram?
+A: SciPy.
 
-Q: Compare with K-means.
-A: K-means needs k, is faster on large data. Hierarchical gives the whole tree and is deterministic.
+Q10. Which function is used to draw a dendrogram?
+A: dendrogram().
 
-Q: What distance is used?
-A: Euclidean distance between TF-IDF vectors (Ward uses it). Cosine is common for text with other linkages.
+Q11. What is TF-IDF?
+A: TF-IDF stands for Term Frequency-Inverse Document Frequency. It measures the importance of a word in a document.
 
-Q: Why .toarray()?
-A: TF-IDF returns a sparse matrix; Ward linkage needs a dense one.
+Q12. Why is TF-IDF used?
+A: It converts text into numerical values and gives more importance to meaningful words.
+
+Q13. What is Ward linkage?
+A: Ward linkage is a method that merges clusters by minimizing the increase in within-cluster variance.
+
+Q14. What does n_clusters=3 mean?
+A: It specifies that the algorithm should create 3 clusters.
+
+Q15. What does fit_predict() do?
+A: It performs clustering and returns the cluster labels for each document.
+
+Q16. What is the difference between Agglomerative and Divisive clustering?
+A:Agglomerative: Bottom-up approach; merges clusters.
+Divisive: Top-down approach; splits clusters.
+
+Q17. What is linkage?
+A: Linkage defines how the distance between two clusters is calculated.
+
+Q18. Name different linkage methods.
+A:Single linkage
+Complete linkage
+Average linkage
+Ward linkage
+
+Q19. What does the height of a dendrogram represent?
+A: It represents the distance or dissimilarity at which clusters are merged.
+
+Q20. What is the use of .toarray()?
+A: It converts a sparse matrix into a dense array.
 
 SHORT VIVA ANSWER
-"This program converts documents into TF-IDF vectors and groups them using agglomerative hierarchical clustering. Each document starts as its own cluster and the two closest clusters are merged repeatedly using Ward linkage until 3 clusters remain. The merge process is shown as a dendrogram."
+"This program implements Agglomerative Hierarchical Clustering using Python. First, we create a dataset containing nine documents. 
+Then, TF-IDF converts the text into numerical vectors. We apply Agglomerative Clustering using Ward linkage to group similar documents into three clusters. 
+Finally, we use a dendrogram to visualize how the clusters are formed. It is an unsupervised learning algorithm because no predefined labels are given."
 
-EXTRA QUESTIONS
-Q: What is K-Means? How to choose K? A: Unsupervised clustering algorithm. K = number of clusters. Choose K using the Elbow plot, picking K where the inertia curve bends.
-Q: What is TF-IDF? A: Term Frequency-Inverse Document Frequency. TF = how often a word appears in a doc. IDF = log(total docs / docs containing the word). Common words get low weight.
-Q: Supervised vs unsupervised learning? A: Supervised uses labelled data (Naive Bayes, SVM). Unsupervised has no labels (K-Means, Hierarchical Clustering). Clustering is unsupervised.
-Q: What is data normalization? A: Scaling features to a common range. Min-Max scales to [0,1]; Standard (Z-score) gives mean 0, std 1. Prevents large-valued features from dominating.
