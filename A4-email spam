@@ -1,202 +1,179 @@
-# Assignment 3: E-mail spam filtering using text classification (Naive Bayes)
-# pip install scikit-learn
-
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score
+# Assignment 4: Agglomerative hierarchical clustering
+# pip install scikit-learn scipy matplotlib
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import linkage, dendrogram
 
 # Dataset
-emails = [
-    ("Win a free iPhone now", "spam"),
-    ("You won a lottery", "spam"),
-    ("Get cheap loans instantly", "spam"),
-    ("Claim your free prize now", "spam"),
-    ("Account suspended, verify now", "spam"),
-    ("Buy cheap medicines online", "spam"),
-    ("Meeting scheduled tomorrow", "ham"),
-    ("Please send the assignment report", "ham"),
-    ("Discuss the project today", "ham"),
-    ("Lunch with the team", "ham"),
-    ("Machine learning notes uploaded", "ham"),
-    ("Practical exam on Monday", "ham")
+docs = [
+    "Cricket match won by India",
+    "Batsman scored a century",
+    "Football world cup final",
+    "Neural networks for image classification",
+    "Machine learning needs training data",
+    "Deep learning improves speech recognition",
+    "Stock market fell after interest rate hike",
+    "Banks raised interest rates",
+    "Share prices increased after company profit"
 ]
 
-# Separate emails and labels
-texts = [x[0] for x in emails]
-labels = [x[1] for x in emails]
-
 # Convert text into numbers
-cv = CountVectorizer(stop_words='english')
-X = cv.fit_transform(texts)
+vec = TfidfVectorizer(stop_words='english')
+X = vec.fit_transform(docs).toarray()
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(
-    X, labels, test_size=0.25, random_state=42
-)
+# Agglomerative clustering
+model = AgglomerativeClustering(n_clusters=3, linkage='ward')
+labels = model.fit_predict(X)
 
-# Train Naive Bayes model
-model = MultinomialNB()
-model.fit(X_train, y_train)
+# Display clusters
+for i in range(3):
+    print("\nCluster", i)
+    for doc, label in zip(docs, labels):
+        if label == i:
+            print("-", doc)
 
-# Test model
-y_pred = model.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
-
-# Predict new emails
-new_emails = ["Win a free prize", "Send the project report"]
-new_X = cv.transform(new_emails)
-predictions = model.predict(new_X)
-
-for mail, result in zip(new_emails, predictions):
-    print(mail, "->", result.upper())
-
+# Dendrogram
+Z = linkage(X, method='ward')
+dendrogram(Z)
+plt.title("Agglomerative Hierarchical Clustering")
+plt.xlabel("Documents")
+plt.ylabel("Distance")
+plt.show()
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-A4: E-MAIL SPAM FILTERING USING TEXT CLASSIFICATION (Naive Bayes)
+A5: AGGLOMERATIVE HIERARCHICAL CLUSTERING
 
-AIM: Train a classifier on labeled e-mails and predict whether new mail is spam or ham.
+AIM: Group similar documents without labels using bottom-up hierarchical clustering, and draw the dendrogram.
 
 CODE EXPLAINED
-1. Imports
-CountVectorizer: Converts text into numerical word-count vectors.
-train_test_split: Splits data into training and testing sets.
-MultinomialNB: Naive Bayes classification algorithm.
-accuracy_score: Calculates the accuracy of the model.
+1. Import libraries
+matplotlib.pyplot: Used to draw graphs.
+TfidfVectorizer: Converts text into numerical TF-IDF vectors.
+AgglomerativeClustering: Performs hierarchical clustering.
+linkage: Calculates how clusters are merged.
+dendrogram: Draws the hierarchical tree diagram.
+%matplotlib inline: Displays graphs directly inside Jupyter Notebook.
 
 2. Dataset
 python
-emails = [
-    ("Win a free iPhone now", "spam"),
-    ("Meeting scheduled tomorrow", "ham")
+docs = [
+    "Cricket match won by India",
+    "Batsman scored a century",
+    "Football world cup final",
+    "Neural networks for image classification",
+    "Machine learning needs training data",
+    "Deep learning improves speech recognition",
+    "Stock market fell after interest rate hike",
+    "Banks raised interest rates",
+    "Share prices increased after company profit"
 ]
-Stores email messages with their labels.
+Stores 9 sample documents.
+Documents are related to three topics:
+Sports
+AI and Machine Learning
+Finance
+No predefined labels are given.
+The algorithm automatically groups similar documents.
 
-spam means unwanted emails.
-ham means genuine or normal emails.
-Our simplified dataset contains 12 emails: 6 spam and 6 ham.
-
-3. Separate emails and labels
+3. Convert text into numbers
 python
-texts = [x[0] for x in emails]
-labels = [x[1] for x in emails]
-texts stores email messages.
-
-labels stores email categories (spam or ham).
-Uses list comprehension.
-
-4. Convert text into numbers
-python
-cv = CountVectorizer(stop_words='english')
-X = cv.fit_transform(texts)
-Creates a CountVectorizer object.
-
-Converts text into numerical word counts.
+vec = TfidfVectorizer(stop_words='english')
+X = vec.fit_transform(docs).toarray()
+Creates a TF-IDF vectorizer.
+Converts documents into numerical vectors.
 Removes common English stop words.
-fit_transform() learns the vocabulary and converts emails into numerical vectors.
-This technique is called Bag of Words.
+fit_transform() learns important words and converts the documents.
+toarray() converts the sparse matrix into a dense array.
+This technique is called TF-IDF (Term Frequency-Inverse Document Frequency).
 
-5. Split dataset
+4. Apply Agglomerative Clustering
 python
-X_train, X_test, y_train, y_test = train_test_split(
-    X, labels, test_size=0.25, random_state=42
-)
-Splits the dataset into training and testing data.
+model = AgglomerativeClustering(n_clusters=3, linkage='ward')
+labels = model.fit_predict(X)
+Creates an Agglomerative Clustering model.
+n_clusters=3 specifies that we need 3 clusters.
+linkage='ward' uses Ward's method to merge clusters.
+fit_predict() performs clustering and assigns cluster numbers.
 
-test_size=0.25 means 25% testing and 75% training.
-random_state=42 ensures the same split every time.
-
-6. Train Naive Bayes model
+5. Display clusters
 python
-model = MultinomialNB()
-model.fit(X_train, y_train)
-Creates a Multinomial Naive Bayes classifier.
+for i in range(3):
+    print("\nCluster", i)
+    for doc, label in zip(docs, labels):
+        if label == i:
+            print("-", doc)
+Loops through all 3 clusters.
+zip() combines documents with their cluster labels.
+Prints documents belonging to each cluster.
 
-fit() trains the model using training data.
-Learns patterns associated with spam and ham emails.
-
-7. Test the model
-python
-y_pred = model.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
-predict() predicts the categories of test emails.
-
-accuracy_score() calculates how many predictions are correct.
-
-8. Predict new emails
-python
-new_emails = ["Win a free prize", "Send the project report"]
-new_X = cv.transform(new_emails)
-predictions = model.predict(new_X)
-Stores two new email messages.
-
-transform() converts new emails into numerical vectors using the existing vocabulary.
-predict() classifies them as spam or ham.
-
-9. Display predictions
-python
-for mail, result in zip(new_emails, predictions):
-    print(mail, "->", result.upper())
-zip() combines each email with its prediction.
-
-upper() converts the result into uppercase.
-Displays SPAM or HAM.
+OUTPUT TO EXPECT: 3 clusters printed, dendrogram.png created. Not perfect because the data is tiny (the neural networks doc landed with finance).
 
 VIVA Q&A
-Q2. What is text classification?
-A: Text classification is the process of assigning text into predefined categories using a trained model.
+Q1. What is clustering?
+A: Clustering is the process of grouping similar data points together without predefined labels.
 
-Q3. What is Naive Bayes?
-A: Naive Bayes is a supervised machine learning algorithm based on Bayes' theorem.
+Q2. What is hierarchical clustering?
+A: It is a clustering technique that creates a hierarchy or tree of clusters.
 
-Q4. Why is it called Naive Bayes?
-A: Because it assumes that all words are independent of each other given the class.
+Q3. What is Agglomerative Clustering?
+A: It is a bottom-up hierarchical clustering algorithm in which each document starts as a separate cluster and similar clusters are merged repeatedly.
 
-Q5. What is Multinomial Naive Bayes?
-A: It is a Naive Bayes algorithm that works with word frequencies or counts.
+Q4. What is the meaning of bottom-up approach?
+A: It means starting with individual data points and gradually combining them into larger clusters.
 
-Q6. What is CountVectorizer?
-A: It converts text into numerical word-count vectors.
+Q5. What is unsupervised learning?
+A: It is a machine learning technique that works with unlabelled data and finds hidden patterns.
 
-Q7. What is Bag of Words?
-A: It is a text representation technique that counts the frequency of words without considering their order.
+Q6. Is Agglomerative Clustering supervised or unsupervised?
+A: Unsupervised learning.
 
-Q8. What is the difference between spam and ham?
-A:Spam: Unwanted or promotional emails.
-Ham: Genuine or normal emails.
+Q7. What is a dendrogram?
+A: A dendrogram is a tree-like diagram that shows how clusters are formed and merged.
 
-Q9. What is training data?
-A: Training data is the data used to teach the machine learning model.
+Q8. Why is a dendrogram used?
+A: It is used to visualize cluster formation and decide the number of clusters.
 
-Q10. What is testing data?
-A: Testing data is used to check how accurately the trained model predicts unseen data.
+Q9. Which library is used to draw a dendrogram?
+A: SciPy.
 
-Q11. What does test_size=0.25 mean?
-A: It means 25% of the dataset is used for testing and 75% for training.
+Q10. Which function is used to draw a dendrogram?
+A: dendrogram().
 
-Q12. What is random_state=42?
-A: It ensures that the dataset is split in the same way every time.
+Q11. What is TF-IDF?
+A: TF-IDF stands for Term Frequency-Inverse Document Frequency. It measures the importance of a word in a document.
 
-Q13. What does fit() do?
-A: It trains the machine learning model using the training data.
+Q12. Why is TF-IDF used?
+A: It converts text into numerical values and gives more importance to meaningful words.
 
-Q14. What does predict() do?
-A: It predicts the class or category of new input data.
+Q13. What is Ward linkage?
+A: Ward linkage is a method that merges clusters by minimizing the increase in within-cluster variance.
 
-Q15. What is accuracy?
-A: Accuracy is the percentage of correctly predicted results out of total predictions.
+Q14. What does n_clusters=3 mean?
+A: It specifies that the algorithm should create 3 clusters.
 
-Q16. What is the use of stop_words='english'?
-A: It removes common English words such as the, is, and, and of.
+Q15. What does fit_predict() do?
+A: It performs clustering and returns the cluster labels for each document.
 
-Q17. What is supervised learning?
-A: Supervised learning is a machine learning technique in which a model learns from labeled data.
+Q16. What is the difference between Agglomerative and Divisive clustering?
+A:Agglomerative: Bottom-up approach; merges clusters.
+Divisive: Top-down approach; splits clusters.
 
-Q18. What is the difference between fit_transform() and transform()?
-A:fit_transform() learns the vocabulary and converts text into vectors.
-transform() converts new text using the already learned vocabulary.
+Q17. What is linkage?
+A: Linkage defines how the distance between two clusters is calculated.
+
+Q18. Name different linkage methods.
+A:Single linkage
+Complete linkage
+Average linkage
+Ward linkage
+
+Q19. What does the height of a dendrogram represent?
+A: It represents the distance or dissimilarity at which clusters are merged.
+
+Q20. What is the use of .toarray()?
+A: It converts a sparse matrix into a dense array.
 
 SHORT VIVA ANSWER
-"This program implements email spam filtering using the Naive Bayes classification algorithm. First, we create a dataset containing spam and ham emails. 
-Then, CountVectorizer converts the email text into numerical word-count vectors. Next, we split the dataset into training and testing data. 
-We train the Multinomial Naive Bayes model and evaluate its accuracy. Finally, we use the trained model to predict whether new emails are spam or ham."
-
+"This program implements Agglomerative Hierarchical Clustering using Python. First, we create a dataset containing nine documents. 
+Then, TF-IDF converts the text into numerical vectors. We apply Agglomerative Clustering using Ward linkage to group similar documents into three clusters. 
+Finally, we use a dendrogram to visualize how the clusters are formed. It is an unsupervised learning algorithm because no predefined labels are given."
