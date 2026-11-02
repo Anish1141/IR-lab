@@ -2,43 +2,17 @@
 # pip install requests beautifulsoup4
 
 import requests
-import csv
 from bs4 import BeautifulSoup
-
-# Website
-url = "http://books.toscrape.com/"
-response = requests.get(url)
-
-soup = BeautifulSoup(response.text, "html.parser")
-
-# Extract product information
-products = []
-
-for item in soup.select("article.product_pod"):
-    title = item.h3.a["title"]
-    price = item.select_one(".price_color").text
-    rating = item.select_one(".star-rating")["class"][1]
-    link = item.h3.a["href"]
-
-    products.append([title, price, rating, link])
-
-# Display products
-for p in products:
-    print("Title:", p[0])
-    print("Price:", p[1])
-    print("Rating:", p[2])
-    print("Link:", p[3])
-    print()
-
-print("Total products:", len(products))
-
-# Save to CSV
-with open("products.csv", "w", newline="", encoding="utf-8") as f:
-    writer = csv.writer(f)
-    writer.writerow(["Title", "Price", "Rating", "Link"])
-    writer.writerows(products)
-
-print("Products saved successfully!")
+url = "https://books.toscrape.com/"
+soup = BeautifulSoup(requests.get(url).text, "html.parser")
+for product in soup.select(".product_pod"):
+    name = product.h3.a["title"]
+    price = product.select_one(".price_color").text
+    link = "https://books.toscrape.com/catalogue/" + product.h3.a["href"]
+print("Name:", name)
+print("Price:", price)
+print("Link:", link)
+print()
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 A7: WEB CRAWLER TO PULL PRODUCT INFORMATION AND LINKS FROM AN E-COMMERCE SITE
 
