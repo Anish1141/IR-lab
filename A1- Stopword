@@ -23,10 +23,9 @@ A1: TEXT PRE-PROCESSING (stop word removal + stemming)
 AIM: Clean raw text so it is ready for indexing: tokenize, remove stop words, stem.
 
 CODE EXPLAINED
-1. import re
-re stands for Regular Expression.
-It is used for searching and extracting patterns from text.
-Here, it is used for tokenization.
+1. import nltk
+Imports the NLTK library.
+NLTK stands for Natural Language Toolkit. It is a Python library used for Natural Language Processing (NLP).
 
 2. from nltk.corpus import stopwords
 Imports the stopwords dataset from NLTK.
@@ -34,59 +33,67 @@ Contains common English words such as the, is, are, of, and.
 
 3. from nltk.stem import PorterStemmer
 Imports Porter Stemmer from NLTK.
-Used to reduce words to their root/stem form.
+Used to reduce words to their root or stem form.
 
-4. text = """..."""
-Stores the input paragraph.
-Triple quotes allow us to write text across multiple lines.
+4. from nltk.tokenize import word_tokenize
+Imports the word_tokenize function.
+Used to split a sentence into individual words or tokens.
 
-5. tokens = re.findall(r'[a-z]+', text.lower())
+5. nltk.download('punkt')
+Downloads the tokenizer data required for word tokenization.
+
+6. nltk.download('stopwords')
+Downloads the English stopwords dataset.
+
+7. nltk.download('punkt_tab')
+Downloads additional tokenizer data required by newer NLTK versions.
+
+8. text = "The students are studying and playing games happily."
+Stores the input sentence.
+
+9. words = word_tokenize(text.lower())
 text.lower() converts all text into lowercase.
-re.findall() extracts matching words.
-[a-z]+ matches one or more lowercase letters.
-Removes punctuation and numbers.
+word_tokenize() splits the sentence into individual words.
 This process is called Tokenization.
+Example:
+The students are studying → ['the', 'students', 'are', 'studying']
 
-6. stop_words = set(stopwords.words('english'))
+10. stop_words = set(stopwords.words('english'))
 Loads the English stop words.
 Converts them into a set for faster searching.
-Example: the, is, are, from.
+Example: the, is, are, and, of.
 
-7. filtered = [w for w in tokens if w not in stop_words]
-Removes common words from the token list.
-Keeps only meaningful words.
-Uses list comprehension.
-
-8. ps = PorterStemmer()
+11. stemmer = PorterStemmer()
 Creates an object of Porter Stemmer.
 Used to perform stemming.
 
-9. stemmed = [ps.stem(w) for w in filtered]
-Applies stemming to every word.
-Reduces words to their stem form.
-
+12. result = [stemmer.stem(w) for w in words if w.isalpha() and w not in stop_words]
+Performs stop word removal and stemming together.
+w.isalpha() keeps only alphabetic words and removes punctuation.
+w not in stop_words removes common words.
+stemmer.stem(w) reduces each remaining word to its stem.
 Examples:
-retrieval → retriev
-documents → document
-indexing → index
-quickly → quickli
+students → student
+studying → studi
+playing → play
+games → game
+happily → happili
 
 VIVA Q&A
-VIVA QUESTIONS AND ANSWERS
 Q1. What is text preprocessing?
-A: Text preprocessing is the process of cleaning raw text before using it for information retrieval or NLP.
+A: Text preprocessing is the process of cleaning raw text before using it for NLP or information retrieval.
 
 Q2. Why do we perform text preprocessing?
-A: To remove unnecessary words, reduce vocabulary size and improve search efficiency.
+A: To remove unnecessary words, reduce vocabulary size and improve text processing efficiency.
 
 Q3. What is tokenization?
 A: Tokenization is the process of splitting text into individual words or tokens.
 
 Q4. What are stop words?
-A: Stop words are common words that usually carry less meaningful information, such as the, is, are, of and in.
+A: Stop words are common words that carry less meaningful information, such as the, is, are, of and in.
 
 Q5. Why do we remove stop words?
-A: To reduce unnecessary words and improve information retrieval efficiency.
+A: To remove unnecessary words and reduce the size of the text.
 
 Q6. What is stemming?
 A: Stemming is the process of reducing words to their root or stem form.
@@ -97,39 +104,43 @@ A: Porter Stemmer.
 Q8. What is NLTK?
 A: NLTK stands for Natural Language Toolkit. It is a Python library used for Natural Language Processing.
 
-Q9. What is the use of the re library?
-A: It is used for pattern matching and text processing using regular expressions.
+Q9. What is the use of the word_tokenize() function?
+A: It splits a sentence into individual words or tokens.
 
 Q10. What does text.lower() do?
 A: It converts all uppercase letters into lowercase letters.
 
-Q11. What does re.findall() do?
-A: It finds all occurrences of a specified pattern in a string and returns them as a list.
+Q11. What does nltk.download('punkt') do?
+A: It downloads the tokenizer data required for splitting text into words.
 
-Q12. What does [a-z]+ mean?
-A: It matches one or more lowercase English letters.
+Q12. What does nltk.download('stopwords') do?
+A: It downloads the English stopwords dataset.
 
 Q13. What is Porter Stemmer?
-A: It is a rule-based stemming algorithm that removes prefixes or suffixes from words.
+A: It is a rule-based stemming algorithm that removes word endings to produce stem forms.
 
 Q14. What is the difference between stemming and lemmatization?
-A: Stemming removes word endings using rules, whereas lemmatization converts words into their meaningful dictionary form.
+A: Stemming removes word endings using rules, whereas lemmatization converts words into meaningful dictionary forms.
 
 Q15. Is the output of stemming always a meaningful English word?
-A: No. A stem may not be a meaningful dictionary word. Example: quickly → quickli.
+A: No. A stem may not be a meaningful dictionary word. Example: happily → happili.
 
-Q16. What is the difference between a list and a set?
-A: A list allows duplicate elements, whereas a set stores unique elements and provides fast membership checking.
+Q16. What is the use of isalpha()?
+A: It checks whether a word contains only alphabetic characters.
 
-Q17. Give an example of stemming.
+Q17. What is the difference between a list and a set?
+A: A list allows duplicate elements, whereas a set stores only unique elements and provides fast membership checking.
+
+Q18. Give examples of stemming.
 A:Playing → play
 Connected → connect
-Retrieval → retriev
+Students → student
+Studying → studi
 
-Q18. What are other preprocessing techniques?
-A: Removing punctuation, removing numbers, tokenization, stop word removal, stemming and lemmatization.
+Q19. What are other text preprocessing techniques?
+A: Lowercasing, tokenization, punctuation removal, stop word removal, stemming and lemmatization.
 
-Q19. What is TF-IDF?
+Q20. What is TF-IDF?
 A: TF-IDF stands for Term Frequency-Inverse Document Frequency. It measures the importance of a word in a document.
 
 Explain 
