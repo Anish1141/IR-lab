@@ -76,7 +76,8 @@ CODE EXPLAINED
 5. Printing the index: sorted(inverted) prints terms alphabetically with their (doc_id, tf) postings.
 
 6. search_and(query)
-   Tokenize query. Start with the doc set of the first term, then intersect (&=) with the doc set of each further term. Only docs containing ALL terms remain. inverted.get(t, {}) avoids errors for unknown terms.
+   Tokenize query. Start with the doc set of the first term, then intersect (&=) with the doc set of each further term. Only docs containing ALL terms remain. 
+   inverted.get(t, {}) avoids errors for unknown terms.
 
 7. search_ranked(query)
    For each query term, add its tf to a per-document score. Sort scores descending. A doc matching more terms/more often ranks higher. (OR semantics + tf scoring.)
